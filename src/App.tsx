@@ -1,8 +1,8 @@
 import "./App.css";
-import MyCalendar from "./components/MyCalender";
+import AppRoutes from "./routes/AppRoutes";
 
 function App() {
-  return <MyCalendar />;
+  return <AppRoutes />;
 }
 
 export default App;

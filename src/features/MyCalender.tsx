@@ -3,10 +3,11 @@ import {
   Calendar,
   momentLocalizer,
   Event as CalendarEvent,
-  SlotInfo,
 } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
+import { ContentLayout } from "@/components/layout/ContentLayout";
+import { useTheme } from "next-themes";
 
 const localizer = momentLocalizer(moment);
 
@@ -19,7 +20,11 @@ interface Event {
 }
 
 const MyCalendar: React.FC = () => {
-  const [events, setEvents] = useState<Event[]>([
+  const { theme } = useTheme();
+
+  const isDarkMode = theme === "dark";
+
+  const [events] = useState<Event[]>([
     {
       id: 1,
       title: "Sample Event",
@@ -36,9 +41,9 @@ const MyCalendar: React.FC = () => {
     },
   ]);
 
-  const handleEventClick = (event: CalendarEvent) => {
-    alert(`Event: ${event.title}`);
-  };
+  // const handleEventClick = (event: CalendarEvent) => {
+  //   alert(`Event: ${event.title}`);
+  // };
 
   // const handleSelectSlot = (slotInfo: SlotInfo) => {
   //   const title = prompt("Enter event title");
@@ -61,24 +66,33 @@ const MyCalendar: React.FC = () => {
     // Here you could open a modal or navigate to a detailed view of the event
   };
   return (
-    <div className="flex justify-center p-4">
-      <div className="w-full max-w-5xl h-[80vh]">
-        <Calendar
-          localizer={localizer}
-          events={events}
-          startAccessor="start"
-          endAccessor="end"
-          defaultView="month"
-          selectable
-          style={{ height: "100%", padding: "2rem" }}
-          // onSelectEvent={handleEventClick}
-          views={["month", "day", "agenda"]}
-          popup={true}
-          onDoubleClickEvent={handleDoubleClickEvent}
-          className="bg-white shadow-md rounded-md"
-        />
+    <ContentLayout title="My Calendar">
+      <div className="flex justify-center p-4">
+        <div
+          className={`w-full max-w-5xl h-[80vh] ${
+            isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
+          }`}
+        >
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            defaultView="month"
+            style={{
+              height: "100%",
+              padding: "2rem",
+              backgroundColor: isDarkMode ? "#333" : "#fff",
+              color: isDarkMode ? "#fff" : "#000",
+            }}
+            views={["month", "day", "agenda"]}
+            popup={true}
+            onDoubleClickEvent={handleDoubleClickEvent}
+            className="shadow-md rounded-md"
+          />
+        </div>
       </div>
-    </div>
+    </ContentLayout>
   );
 };
 
