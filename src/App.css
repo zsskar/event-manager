@@ -1,0 +1,26 @@
+/* Custom styles for react-big-calendar components with Tailwind */
+
+.rbc-event {
+  @apply bg-blue-500 text-white rounded-lg px-2 py-1;
+}
+
+.rbc-toolbar-label {
+  @apply font-bold text-lg text-gray-800;
+}
+
+.rbc-today {
+  @apply bg-blue-100;
+}
+
+.rbc-month-view,
+.rbc-time-view {
+  @apply bg-gray-50;
+}
+
+.rbc-header {
+  @apply text-blue-600 font-semibold;
+}
+
+.rbc-date-cell {
+  @apply hover:bg-blue-100 cursor-pointer;
+}
