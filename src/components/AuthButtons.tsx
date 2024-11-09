@@ -21,6 +21,7 @@ const AuthButton: React.FC<AuthButtonProps> = ({
       mode={mode}
       signUpFallbackRedirectUrl={redirectUrl}
       signInFallbackRedirectUrl={redirectUrl}
+      forceRedirectUrl={redirectUrl}
     >
       <Button className={className}>
         {type === "signUp" ? "Sign Up" : "Sign In"}

@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useStore } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { PanelsTopLeft } from "lucide-react";
+import { Calendar, PanelsTopLeft } from "lucide-react";
 import { SidebarToggle } from "../dashboard/SidebarToggle";
 import { Link } from "react-router-dom";
 import { Menu } from "../dashboard/Menu";
@@ -27,14 +27,14 @@ export default function Sidebar() {
       >
         <Button
           className={cn(
-            "transition-transform ease-in-out duration-300 mb-1",
+            "transition-transform ease-in-out duration-300 mb-1 hover:no-underline",
             !getOpenState() ? "translate-x-1" : "translate-x-0"
           )}
           variant="link"
           asChild
         >
           <Link to="/dashboard" className="flex items-center gap-2">
-            <PanelsTopLeft className="w-6 h-6 mr-1" />
+            <Calendar className="w-6 h-6 mr-1" />
             <h1
               className={cn(
                 "font-bold text-lg whitespace-nowrap transition-[transform,opacity,display] ease-in-out duration-300",
@@ -43,7 +43,7 @@ export default function Sidebar() {
                   : "translate-x-0 opacity-100"
               )}
             >
-              Brand
+              Event Manager
             </h1>
           </Link>
         </Button>

@@ -13,18 +13,29 @@ import { useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { CollapseMenuButton } from "./CollapseMenuButton";
 import { getMenuList } from "@/lib/menu-list";
+import { useClerk } from "@clerk/clerk-react";
 
 interface MenuProps {
   isOpen: boolean | undefined;
 }
 
 export function Menu({ isOpen }: MenuProps) {
-  const pathname = useLocation();
+  const path = useLocation();
+  const pathName = path.pathname;
+
+  const getCurrentPathName =
+    pathName.lastIndexOf("/") == 0
+      ? pathName
+      : pathName.substring(pathName.lastIndexOf("/") + 1);
+
+  console.log("getCurrentPathName :" + getCurrentPathName);
+
   const menuList = getMenuList();
+  const { signOut } = useClerk();
 
   return (
     <ScrollArea className="[&>div>div[style]]:!block">
-      <nav className="mt-8 h-full w-full">
+      <nav className="mt-4 h-full w-full">
         <ul className="flex flex-col min-h-[calc(100vh-48px-36px-16px-32px)] lg:min-h-[calc(100vh-32px-40px-32px)] items-start space-y-1 px-2">
           {menuList.map(({ groupLabel, menus }, index) => (
             <li className={cn("w-full", groupLabel ? "pt-5" : "")} key={index}>
@@ -58,7 +69,7 @@ export function Menu({ isOpen }: MenuProps) {
                             <Button
                               variant={
                                 (active === undefined &&
-                                  pathname.pathname.startsWith(href)) ||
+                                  getCurrentPathName.startsWith(href)) ||
                                 active
                                   ? "secondary"
                                   : "ghost"
@@ -100,7 +111,7 @@ export function Menu({ isOpen }: MenuProps) {
                         label={label}
                         active={
                           active === undefined
-                            ? pathname.pathname.startsWith(href)
+                            ? getCurrentPathName.startsWith(href)
                             : active
                         }
                         submenus={submenus}
@@ -116,7 +127,9 @@ export function Menu({ isOpen }: MenuProps) {
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={() => {}}
+                    onClick={() => {
+                      signOut({ redirectUrl: "/" });
+                    }}
                     variant="outline"
                     className="w-full justify-center h-10 mt-5"
                   >

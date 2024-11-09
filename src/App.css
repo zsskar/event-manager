@@ -18,3 +18,48 @@
   background-color: #444 !important;
   color: #ddd !important;
 }
+
+/* Add to your CSS or Tailwind configuration */
+.cl-navbarButton,
+.cl-button,
+.cl-navbarButton__account,
+.cl-button__account,
+.cl-active {
+  /* Default (light mode) styling */
+  background-color: #ffffff;
+  color: #24292f;
+}
+
+/* Dark mode styling */
+.dark .cl-navbarButton,
+.dark .cl-button,
+.dark .cl-navbarButton__account,
+.dark .cl-button__account,
+.dark .cl-active {
+  background-color: #161b22; /* Dark background */
+  color: #c9d1d9; /* Light text color */
+}
+
+/* Default (Light mode) */
+.cl-navbarButton,
+.cl-button,
+.cl-navbarButton__account,
+.cl-button__account,
+.cl-navbarButton__security,
+.cl-button__security,
+.cl-active {
+  background-color: #ffffff; /* Light background */
+  color: #24292f; /* Dark text */
+}
+
+/* Dark mode styling */
+.dark .cl-navbarButton,
+.dark .cl-button,
+.dark .cl-navbarButton__account,
+.dark .cl-button__account,
+.dark .cl-navbarButton__security,
+.dark .cl-button__security,
+.dark .cl-active {
+  background-color: #161b22; /* Dark background */
+  color: #c9d1d9; /* Light text color */
+}

@@ -64,9 +64,8 @@ const LandingPage: React.FC = () => {
                   Effortless Event Management
                 </h1>
                 <p className="max-w-[600px] text-muted-foreground md:text-xl">
-                  Streamline your event planning and ticketing with our
-                  all-in-one platform. Elevate your events and delight your
-                  attendees.
+                  Streamline your event planning with our all-in-one platform.
+                  Elevate your events and delight your attendees.
                 </p>
                 <div className="flex flex-col gap-2 min-[400px]:flex-row">
                   {isLoaded && !session ? (

@@ -6,6 +6,7 @@ import {
   SquarePen,
   LayoutGrid,
   LucideIcon,
+  Calendar1,
 } from "lucide-react";
 
 type Submenu = {
@@ -41,30 +42,21 @@ export function getMenuList(): Group[] {
       ],
     },
     {
-      groupLabel: "Contents",
+      groupLabel: "Events",
       menus: [
         {
-          href: "",
-          label: "Posts",
-          icon: SquarePen,
-          submenus: [
-            {
-              href: "/posts",
-              label: "All Posts",
-            },
-            {
-              href: "/posts/new",
-              label: "New Post",
-            },
-          ],
+          href: "mycalender",
+          label: "Event",
+          icon: Calendar1,
+          submenus: [],
         },
         {
-          href: "/categories",
+          href: "categories",
           label: "Categories",
           icon: Bookmark,
         },
         {
-          href: "/tags",
+          href: "tags",
           label: "Tags",
           icon: Tag,
         },
@@ -74,12 +66,7 @@ export function getMenuList(): Group[] {
       groupLabel: "Settings",
       menus: [
         {
-          href: "/users",
-          label: "Users",
-          icon: Users,
-        },
-        {
-          href: "/account",
+          href: "profile",
           label: "Account",
           icon: Settings,
         },
