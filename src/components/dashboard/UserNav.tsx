@@ -18,21 +18,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSession } from "@clerk/clerk-react";
 import CircularLoader from "../ui/circular-loader";
-import { useEffect } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 export function UserNav() {
   const { isLoaded, session } = useSession();
+  const { toast } = useToast();
   const { signOut } = useClerk();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (session == null) {
-      navigate("/");
-    }
-  }, [session]);
 
   return (
     <DropdownMenu>
@@ -51,7 +45,7 @@ export function UserNav() {
                       alt="Avatar"
                     />
                     <AvatarFallback className="bg-transparent">
-                      JD
+                      <CircularLoader />
                     </AvatarFallback>
                   </Avatar>
                 </Button>
@@ -90,7 +84,13 @@ export function UserNav() {
         <DropdownMenuItem
           className="hover:cursor-pointer"
           onClick={() => {
-            signOut().then(() => console.log("The session is :", session));
+            toast({
+              variant: "destructive",
+              title: "Sign Out",
+              description: "You have been signed out successfully.",
+            });
+
+            signOut({ redirectUrl: "/" });
           }}
         >
           <LogOut className="w-4 h-4 mr-3 text-muted-foreground" />
