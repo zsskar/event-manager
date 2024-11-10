@@ -4,6 +4,8 @@ import LandingPage from "@/components/LandingPage";
 import MyCalendar from "@/features/MyCalender";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Profile from "@/components/dashboard/Profile";
+import Categories from "../features/categories";
+import Tags from "@/features/tags";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -20,6 +22,8 @@ const AppRoutes: React.FC = () => {
           {/* Nested route for "/dashboard/mycalendar" */}
           <Route path="mycalender" element={<MyCalendar />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="categories" element={<Categories />} />
+          <Route path="tags" element={<Tags />} />
         </Route>
       </Routes>
     </Router>

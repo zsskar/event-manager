@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/hooks/use-sidebar";
 import { useStore } from "@/hooks/use-store";
 import { cn } from "@/lib/utils";
-import { Calendar, PanelsTopLeft } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { SidebarToggle } from "../dashboard/SidebarToggle";
 import { Link } from "react-router-dom";
 import { Menu } from "../dashboard/Menu";
@@ -11,6 +11,7 @@ export default function Sidebar() {
   const sidebar = useStore(useSidebar, (x) => x);
   if (!sidebar) return null;
   const { isOpen, toggleOpen, getOpenState, setIsHover, settings } = sidebar;
+
   return (
     <aside
       className={cn(

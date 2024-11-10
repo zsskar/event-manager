@@ -1,9 +1,7 @@
 import {
   Tag,
-  Users,
   Settings,
   Bookmark,
-  SquarePen,
   LayoutGrid,
   LucideIcon,
   Calendar1,
@@ -28,13 +26,13 @@ type Group = {
   menus: Menu[];
 };
 
-export function getMenuList(): Group[] {
+export function getMenuList(basePath: string = "/dashboard"): Group[] {
   return [
     {
       groupLabel: "",
       menus: [
         {
-          href: "/dashboard",
+          href: `${basePath}`, // Dashboard route with basePath
           label: "Dashboard",
           icon: LayoutGrid,
           submenus: [],
@@ -45,18 +43,18 @@ export function getMenuList(): Group[] {
       groupLabel: "Events",
       menus: [
         {
-          href: "mycalender",
+          href: `${basePath}/myCalender`, // Event route with basePath
           label: "Event",
           icon: Calendar1,
           submenus: [],
         },
         {
-          href: "categories",
+          href: `${basePath}/categories`, // Categories route with basePath
           label: "Categories",
           icon: Bookmark,
         },
         {
-          href: "tags",
+          href: `${basePath}/tags`, // Tags route with basePath
           label: "Tags",
           icon: Tag,
         },
@@ -66,7 +64,7 @@ export function getMenuList(): Group[] {
       groupLabel: "Settings",
       menus: [
         {
-          href: "profile",
+          href: `${basePath}/profile`, // Account route with basePath
           label: "Account",
           icon: Settings,
         },

@@ -1,4 +1,4 @@
-import { Calendar, MenuIcon, PanelsTopLeft } from "lucide-react";
+import { Calendar, MenuIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {

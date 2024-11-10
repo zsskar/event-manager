@@ -23,13 +23,6 @@ export function Menu({ isOpen }: MenuProps) {
   const path = useLocation();
   const pathName = path.pathname;
 
-  const getCurrentPathName =
-    pathName.lastIndexOf("/") == 0
-      ? pathName
-      : pathName.substring(pathName.lastIndexOf("/") + 1);
-
-  console.log("getCurrentPathName :" + getCurrentPathName);
-
   const menuList = getMenuList();
   const { signOut } = useClerk();
 
@@ -68,10 +61,9 @@ export function Menu({ isOpen }: MenuProps) {
                           <TooltipTrigger asChild>
                             <Button
                               variant={
-                                (active === undefined &&
-                                  getCurrentPathName.startsWith(href)) ||
+                                (active === undefined && pathName == href) || // Matches subpaths like `/dashboard/myCalender`
                                 active
-                                  ? "secondary"
+                                  ? "default"
                                   : "ghost"
                               }
                               className="w-full justify-start h-10 mb-1"
@@ -110,9 +102,7 @@ export function Menu({ isOpen }: MenuProps) {
                         icon={Icon}
                         label={label}
                         active={
-                          active === undefined
-                            ? getCurrentPathName.startsWith(href)
-                            : active
+                          active === undefined ? pathName === href : active
                         }
                         submenus={submenus}
                         isOpen={isOpen}
