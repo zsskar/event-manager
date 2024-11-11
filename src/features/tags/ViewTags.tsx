@@ -1,7 +1,6 @@
-import { Cross1Icon, Cross2Icon } from "@radix-ui/react-icons";
-import { SelectIcon } from "@radix-ui/react-select";
+import { TagGroup, tags } from "@/App";
+import { Cross2Icon } from "@radix-ui/react-icons";
 import {
-  Cross,
   GridIcon,
   Info,
   ListIcon,
@@ -12,40 +11,18 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 
-type TagGroup = {
-  color: string;
-  tags: string[];
-};
-
 export default function ViewTags() {
-  const tags: TagGroup[] = [
-    {
-      color: "#000000",
-      tags: ["TAG1", "TAG2", "TAG3"],
-    },
-    {
-      color: "#262",
-      tags: ["TAG4", "TAG5"],
-    },
-    {
-      color: "#0724",
-      tags: ["TAG6"],
-    },
-    {
-      color: "#984",
-      tags: ["TAG7"],
-    },
-  ];
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [availableTags, setAvailableTags] = useState<TagGroup[]>(tags);
   const [view, setView] = useState<string>("list");
 
   const handleDeleteSelectedTags = () => {
     // Filter out selected tags from all available tags
-    const updatedTags = availableTags.map((group) => ({
+    let updatedTags = availableTags.map((group) => ({
       ...group,
       tags: group.tags.filter((tag) => !selectedTags.includes(tag)),
     }));
+    updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
     setSelectedTags([]); // Clear the selected tags after deletion
 
@@ -59,10 +36,11 @@ export default function ViewTags() {
   };
 
   const handleDeleteSelectedTag = (tagName: string) => {
-    const updatedTags = availableTags.map((group) => ({
+    let updatedTags = availableTags.map((group) => ({
       ...group,
       tags: group.tags.filter((tag) => tag !== tagName),
     }));
+    updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
     setSelectedTags([]); // Clear the selected tags after deletion
     console.log("Updated available tags after deletion:", updatedTags);
