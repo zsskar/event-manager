@@ -1,5 +1,4 @@
 import { TagGroup, tags } from "@/App";
-import { Cross2Icon } from "@radix-ui/react-icons";
 import {
   GridIcon,
   Info,
@@ -10,6 +9,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import ListView from "./ListView";
+import GroupView from "./GroupView";
 
 export default function ViewTags() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
@@ -100,7 +101,7 @@ export default function ViewTags() {
     <>
       {availableTags && availableTags.length > 0 ? (
         <>
-          <div className="flex justify-between items-center mb-4 sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 rounded-t-lg">
+          <div className="flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 z-10 p-4 rounded-t-lg">
             <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
               Tags
             </h3>
@@ -119,96 +120,22 @@ export default function ViewTags() {
               </button>
             </div>
           </div>
-          <div className="flex justify-center dark:bg-gray-900 pt-5">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-10 w-full  max-h-96 overflow-y-auto">
+          <div className="flex justify-center dark:bg-gray-900">
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 w-full  max-h-96 overflow-y-auto">
               {view === "list" ? (
-                <div className="flex flex-wrap gap-3">
-                  {availableTags.map((group, groupIndex) =>
-                    group.tags.map((tagName, tagIndex) => (
-                      <div
-                        key={`${groupIndex}-${tagIndex}`}
-                        className="flex items-center space-x-2 px-3 py-1 rounded-full shadow-sm"
-                        style={{
-                          backgroundColor: group.color,
-                          color: "#fff",
-                          boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.7)",
-                        }}
-                      >
-                        <input
-                          type="checkbox"
-                          className="h-3 w-3 text-blue-600 rounded focus:ring-1 focus:ring-offset-1 focus:ring-blue-300"
-                          checked={selectedTags.includes(tagName)}
-                          onChange={() => handleCheckboxChange(tagName)}
-                        />
-                        <span className="text-sm font-semibold">{tagName}</span>
-                        <button
-                          className="text-white hover:text-red-400 focus:outline-none"
-                          onClick={() => handleDeleteSelectedTag(tagName)}
-                        >
-                          <span className="inline-block w-4 h-4 text-lg font-bold leading-none">
-                            <Cross2Icon />
-                          </span>
-                        </button>
-                      </div>
-                    ))
-                  )}
-                </div>
+                <ListView
+                  availableTags={availableTags}
+                  selectedTags={selectedTags}
+                  handleCheckboxChange={handleCheckboxChange}
+                  handleDeleteSelectedTag={handleDeleteSelectedTag}
+                />
               ) : (
-                <div className="space-y-4">
-                  {availableTags.map((group, groupIndex) => (
-                    <div
-                      key={groupIndex}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-lg"
-                    >
-                      {/* Color box */}
-                      <div
-                        className="flex items-center space-x-3 mb-4"
-                        style={{
-                          backgroundColor: group.color,
-                          padding: "6px 12px",
-                          borderRadius: "8px",
-                          boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.2)`,
-                        }}
-                      >
-                        <div
-                          className="w-6 h-6 rounded-full"
-                          style={{ backgroundColor: group.color }}
-                        ></div>
-                        <span className="text-white font-semibold">
-                          {group.color}
-                        </span>
-                      </div>
-
-                      {/* Tags as badges */}
-                      <div className="flex flex-wrap gap-2">
-                        {group.tags.map((tagName, tagIndex) => (
-                          <div
-                            key={`${groupIndex}-${tagIndex}`}
-                            className="flex items-center space-x-2 px-4 py-2 rounded-full shadow-sm bg-gray-200 dark:bg-gray-700"
-                          >
-                            <input
-                              type="checkbox"
-                              className="h-4 w-4 text-blue-600 rounded focus:ring-1 focus:ring-offset-1 focus:ring-blue-300"
-                              checked={selectedTags.includes(tagName)}
-                              onChange={() => handleCheckboxChange(tagName)}
-                            />
-                            <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
-                              {tagName}
-                            </span>
-                            <button
-                              className="text-gray-600 hover:text-red-400 focus:outline-none"
-                              onClick={() =>
-                                handleDeleteSelectedTagBox(group.color, tagName)
-                              }
-                            >
-                              <Cross2Icon className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <GroupView
+                  availableTags={availableTags}
+                  selectedTags={selectedTags}
+                  handleCheckboxChange={handleCheckboxChange}
+                  handleDeleteSelectedTagBox={handleDeleteSelectedTagBox}
+                />
               )}
               {/* Selected Categories Count section */}
               {selectedTags.length > 0 && (

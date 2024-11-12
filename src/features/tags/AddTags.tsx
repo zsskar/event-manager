@@ -61,8 +61,12 @@ export default function AddTags() {
     form.setValue("color", color.hex);
   };
 
+  useEffect(() => {
+    form.setValue("tags", tags);
+  }, [form, tags]);
+
   return (
-    <div className="flex justify-center dark:bg-gray-900 pt-5">
+    <div className="flex justify-center dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-5 w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

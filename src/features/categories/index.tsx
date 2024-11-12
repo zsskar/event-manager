@@ -1,7 +1,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import AddCategory from "./AddCategory";
-import { ViewCategories } from "./ViewCategories";
+import ViewCategories from "./ViewCategories";
 
 export default function Categories() {
   return (

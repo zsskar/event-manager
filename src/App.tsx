@@ -7,6 +7,10 @@ export type TagGroup = {
   tags: string[];
 };
 
+export type Category = {
+  category: string;
+};
+
 export const tags: TagGroup[] = [
   {
     color: "#000000",
@@ -24,6 +28,16 @@ export const tags: TagGroup[] = [
     color: "#984",
     tags: ["TAG7"],
   },
+];
+
+export const categories: Category[] = [
+  { category: "Category1" },
+  { category: "Category2" },
+  { category: "Category3" },
+  { category: "Category4" },
+  { category: "Category5" },
+  { category: "Category6" },
+  { category: "Category7" },
 ];
 
 function App() {
