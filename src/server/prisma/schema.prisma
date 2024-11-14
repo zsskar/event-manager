@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Event {
+  id             Int       @id @default(autoincrement()) 
+  name           String   
+  description    String?   // Optional description of the event
+  createdAt      DateTime  @default(now())               
+  updatedAt      DateTime  @updatedAt                     // Automatically updates to current date and time when the record is updated
+  tags           String?  
+  category       String?    
+  fromDate       DateTime  
+  toDate         DateTime  
+  location       String?   // Location or address where the event is held
+  status         EventStatus @default(PLANNED) // Enum for event status, like PLANNED, COMPLETED, CANCELED
+  createdBy      String
+}
+
+enum EventStatus {
+  PLANNED
+  ONGOING
+  COMPLETED
+  CANCELED
+}
+
+model Tag {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique                     // Unique tag name
+  color      String                              // Color for the tag, e.g., hex code
+  createdAt  DateTime @default(now())
+  createdBy  String                              // Creator's ID or name
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())  // Unique category identifier
+  name       String   @unique                       // Unique category name
+  createdAt  DateTime @default(now())               // Timestamp when category is created
+  createdBy  String   // Creator of the category
+}
