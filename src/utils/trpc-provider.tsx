@@ -4,8 +4,7 @@ import { trpc } from "@/utils/trpc";
 import { getFetch, httpBatchLink, loggerLink } from "@trpc/client";
 
 const getAPIUrl = () => {
-  if (process.env.API_URL) return `https://${process.env.API_URL}`;
-  return `http://localhost:${process.env.PORT ?? 8000}`;
+  return `http://localhost:${8000}`;
 };
 
 const TRPCProvider = (props: { children: React.ReactNode }) => {

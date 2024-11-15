@@ -1,34 +1,39 @@
 import "./App.css";
 import AppRoutes from "./routes/AppRoutes";
+import { RecoilRoot } from "recoil";
 import { Toaster } from "@/components/ui/sonner";
+import TRPCProvider from "./utils/trpc-provider";
 
 export type TagGroup = {
   color: string;
   tags: string[];
+  createdBy?: string;
+  createdAt: string;
+  id: number;
 };
 
 export type Category = {
   category: string;
 };
 
-export const tags: TagGroup[] = [
-  {
-    color: "#000000",
-    tags: ["TAG1", "TAG2", "TAG3"],
-  },
-  {
-    color: "#262",
-    tags: ["TAG4", "TAG5"],
-  },
-  {
-    color: "#0724",
-    tags: ["TAG6"],
-  },
-  {
-    color: "#984",
-    tags: ["TAG7"],
-  },
-];
+// export const tags: TagGroup[] = [
+//   {
+//     color: "#000000",
+//     tags: ["TAG1", "TAG2", "TAG3"],
+//   },
+//   {
+//     color: "#262",
+//     tags: ["TAG4", "TAG5"],
+//   },
+//   {
+//     color: "#0724",
+//     tags: ["TAG6"],
+//   },
+//   {
+//     color: "#984",
+//     tags: ["TAG7"],
+//   },
+// ];
 
 export const categories: Category[] = [
   { category: "Category1" },
@@ -43,8 +48,12 @@ export const categories: Category[] = [
 function App() {
   return (
     <>
-      <AppRoutes />
-      <Toaster />
+      <TRPCProvider>
+        <RecoilRoot>
+          <AppRoutes />
+        </RecoilRoot>
+        <Toaster />
+      </TRPCProvider>
     </>
   );
 }

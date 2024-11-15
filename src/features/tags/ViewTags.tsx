@@ -1,4 +1,4 @@
-import { TagGroup, tags } from "@/App";
+import { TagGroup } from "@/App";
 import {
   GridIcon,
   Info,
@@ -7,18 +7,38 @@ import {
   Trash2Icon,
   TrashIcon,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ListView from "./ListView";
 import GroupView from "./GroupView";
+import { useRecoilValue } from "recoil";
+import { tagsState } from "@/store/atoms/tags";
+import { trpc } from "@/utils/trpc";
+import { useSession } from "@clerk/clerk-react";
 
 export default function ViewTags() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [availableTags, setAvailableTags] = useState<TagGroup[]>(tags);
   const [view, setView] = useState<string>("list");
+  const [tagsData] = useRecoilValue(tagsState);
+  const [availableTags, setAvailableTags] = useState<TagGroup[]>(tagsData);
+  const { session, isLoaded } = useSession();
+
+  const {
+    data: tags,
+    isLoading,
+    error,
+  } = trpc.tags.getTagsByUserId.useQuery(
+    { userId: session?.user.id || "" },
+    { enabled: isLoaded }
+  );
+
+  useEffect(() => {
+    if (!isLoading && tags) {
+      setAvailableTags(tags);
+    }
+  }, [isLoading, tags]);
 
   const handleDeleteSelectedTags = () => {
-    // Filter out selected tags from all available tags
     let updatedTags = availableTags.map((group) => ({
       ...group,
       tags: group.tags.filter((tag) => !selectedTags.includes(tag)),
@@ -26,9 +46,7 @@ export default function ViewTags() {
     updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
     setSelectedTags([]); // Clear the selected tags after deletion
-
     console.log("Updated available tags after deletion:", updatedTags);
-
     toast(`${selectedTags.length} Tags has been deleted.`, {
       icon: <Info className="w-5 h-5 text-white" />, // Ensure the icon is white
       position: "top-right",
@@ -181,7 +199,9 @@ export default function ViewTags() {
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
           <h3 className="text-lg text-center font-semibold text-gray-700 dark:text-gray-200">
-            No Tags Available
+            {availableTags?.length == 0 && !isLoading
+              ? "No Tags Available"
+              : "Loading..."}
           </h3>
         </div>
       )}

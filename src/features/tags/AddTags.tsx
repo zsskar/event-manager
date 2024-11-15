@@ -20,6 +20,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
+import { useSession } from "@clerk/clerk-react";
+import { trpc } from "@/utils/trpc";
+import { useRecoilState } from "recoil";
+import { tagsState } from "@/store/atoms/tags";
+import { toast } from "sonner";
 
 const createFormSchema = (fieldName: string) =>
   z.object({
@@ -34,13 +39,17 @@ const createFormSchema = (fieldName: string) =>
 type FormData = {
   tags: string[];
   color: string;
+  createdBy?: string;
 };
 
 const formName = "tags";
 const formSchema = createFormSchema(formName);
 
 export default function AddTags() {
-  const [tags, setTags] = useState<string[]>([]);
+  const [inputTags, setInputTags] = useState<string[]>([]);
+  const { session } = useSession();
+  const mutation = trpc.tags.insert.useMutation();
+  const [, setTags] = useRecoilState(tagsState);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -48,13 +57,28 @@ export default function AddTags() {
   });
 
   const onSubmit = (data: FormData) => {
-    console.log("Form Submitted", data);
     const formattedTags = data.tags.map((tag) => tag.toUpperCase()).toString();
     const tagsData = {
       tags: formattedTags,
       color: data.color,
+      createdBy: session?.user.id as string,
     };
-    console.log("Form Data: ", tagsData);
+
+    mutation.mutate(tagsData, {
+      onSuccess: (data) => {
+        toast("tags saved successfully.");
+        setTags((prev) => {
+          return [...prev, data];
+        });
+        setInputTags([]);
+        form.reset();
+      },
+      onError: (error) => {
+        toast("something went wrong.");
+        console.error("Error inserting data:", error);
+        // Handle any error actions here, like showing an error message
+      },
+    });
   };
 
   const handleColorChange = (color) => {
@@ -62,8 +86,8 @@ export default function AddTags() {
   };
 
   useEffect(() => {
-    form.setValue("tags", tags);
-  }, [form, tags]);
+    form.setValue("tags", inputTags);
+  }, [form, inputTags]);
 
   return (
     <div className="flex justify-center dark:bg-gray-900">
@@ -97,8 +121,8 @@ export default function AddTags() {
 
                   <FormControl>
                     <InputTags
-                      value={tags} // Pass the tags state directly
-                      onChange={setTags} // Update state based on new tags array
+                      value={inputTags} // Pass the tags state directly
+                      onChange={setInputTags} // Update state based on new tags array
                       placeholder="Enter a tag and press Enter"
                     />
                   </FormControl>

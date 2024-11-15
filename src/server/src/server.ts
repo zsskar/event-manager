@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import * as trpcExpress from "@trpc/server/adapters/express";
+
 import { calender } from "./router/calender";
 import { router } from "./trpc";
 import { createContext } from "./context";
@@ -17,7 +18,7 @@ export const appRouter = router({
 
 app.use(
   cors({
-    origin: "http://localhost:3000",
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );

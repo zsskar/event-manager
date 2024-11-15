@@ -37,7 +37,7 @@ enum EventStatus {
 
 model Tag {
   id         Int      @id @default(autoincrement())
-  name       String   @unique                     // Unique tag name
+  tags       String    @unique                     // Unique tag name
   color      String                              // Color for the tag, e.g., hex code
   createdAt  DateTime @default(now())
   createdBy  String                              // Creator's ID or name
