@@ -15,28 +15,41 @@ import { useRecoilValue } from "recoil";
 import { tagsState } from "@/store/atoms/tags";
 import { trpc } from "@/utils/trpc";
 import { useSession } from "@clerk/clerk-react";
-
 export default function ViewTags() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [view, setView] = useState<string>("list");
-  const [tagsData] = useRecoilValue(tagsState);
-  const [availableTags, setAvailableTags] = useState<TagGroup[]>(tagsData);
-  const { session, isLoaded } = useSession();
-
-  const {
-    data: tags,
-    isLoading,
-    error,
-  } = trpc.tags.getTagsByUserId.useQuery(
-    { userId: session?.user.id || "" },
-    { enabled: isLoaded }
-  );
+  const tagsData = useRecoilValue(tagsState); // Retrieve the Recoil state
+  const [availableTags, setAvailableTags] = useState<TagGroup[]>(tagsData); // Initialize state with Recoil value
+  const deleteMutation = trpc.tags.deleteTagsByUserId.useMutation();
+  const { isLoaded, session } = useSession();
 
   useEffect(() => {
-    if (!isLoading && tags) {
-      setAvailableTags(tags);
+    if (tagsData && tagsData.length > 0) {
+      setAvailableTags(tagsData);
     }
-  }, [isLoading, tags]);
+  }, [tagsData]);
+
+  const deleteTagsByUserId = (tagsPayload: string) => {
+    deleteMutation.mutate(
+      {
+        userId: session?.user.id as string,
+        tags: tagsPayload,
+      },
+      {
+        onSuccess: () => {
+          // Clear the selected tags after deletion
+          toast.success(
+            `${selectedTags.length == 1 ? "Tag" : "Tags"} deleted successfully`
+          );
+          setSelectedTags([]);
+        },
+        onError: (error) => {
+          toast.error("something went wrong !");
+          console.error("Failed to delete tags:", error);
+        },
+      }
+    );
+  };
 
   const handleDeleteSelectedTags = () => {
     let updatedTags = availableTags.map((group) => ({
@@ -45,13 +58,8 @@ export default function ViewTags() {
     }));
     updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
-    setSelectedTags([]); // Clear the selected tags after deletion
-    console.log("Updated available tags after deletion:", updatedTags);
-    toast(`${selectedTags.length} Tags has been deleted.`, {
-      icon: <Info className="w-5 h-5 text-white" />, // Ensure the icon is white
-      position: "top-right",
-      className: "custom-toast", // Ensures all text inside the toast is white
-    });
+    const tagsPayload = selectedTags.join(",");
+    deleteTagsByUserId(tagsPayload);
   };
 
   const handleDeleteSelectedTag = (tagName: string) => {
@@ -61,8 +69,7 @@ export default function ViewTags() {
     }));
     updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
-    setSelectedTags([]); // Clear the selected tags after deletion
-    console.log("Updated available tags after deletion:", updatedTags);
+    deleteTagsByUserId(tagName);
   };
 
   const handleCheckboxChange = (tag: string) => {
@@ -84,7 +91,7 @@ export default function ViewTags() {
   };
 
   const handleSelectAll = () => {
-    const allTags = tags.flatMap((group) => group.tags);
+    const allTags = availableTags.flatMap((group) => group.tags);
     setSelectedTags(allTags);
   };
 
@@ -199,9 +206,10 @@ export default function ViewTags() {
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
           <h3 className="text-lg text-center font-semibold text-gray-700 dark:text-gray-200">
-            {availableTags?.length == 0 && !isLoading
+            {/* {availableTags?.length == 0 && !isLoading
               ? "No Tags Available"
-              : "Loading..."}
+              : "Loading..."} */}
+            No Tags Available
           </h3>
         </div>
       )}

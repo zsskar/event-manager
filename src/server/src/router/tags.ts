@@ -62,4 +62,58 @@ export const tags = router({
         tags: tag.tags.split(",").map((t) => t.trim()), // Convert to array
       }));
     }),
+  deleteTagsByUserId: procedure
+    .input(
+      z.object({
+        userId: z.string(), // User ID to match
+        tags: z.string(), // Comma-separated string of tags to delete
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { userId, tags } = input; // tags is a comma-separated string or an array
+      const tagsArray = tags.split(",").map((tag) => tag.trim()); // Convert tags to an array
+
+      // Find all records where the createdBy matches userId
+      const tagRecords = await ctx.prisma.tag.findMany({
+        where: {
+          createdBy: userId,
+        },
+      });
+
+      if (tagRecords.length === 0) {
+        throw new Error("No tags found for the given user.");
+      }
+
+      // Loop through each record and filter out the tags to delete
+      for (const tagRecord of tagRecords) {
+        // Split the tags from the record and check if any of the tags match the ones to delete
+        const currentTags = tagRecord.tags.split(",").map((tag) => tag.trim());
+
+        // Filter out the tags that need to be deleted
+        const remainingTags = currentTags.filter(
+          (tag) => !tagsArray.includes(tag)
+        );
+
+        if (remainingTags.length === 0) {
+          // If no tags remain, delete the record
+          await ctx.prisma.tag.delete({
+            where: {
+              id: tagRecord.id,
+            },
+          });
+        } else {
+          // Otherwise, update the record with the remaining tags
+          await ctx.prisma.tag.update({
+            where: {
+              id: tagRecord.id,
+            },
+            data: {
+              tags: remainingTags.join(","),
+            },
+          });
+        }
+      }
+
+      return { success: true };
+    }),
 });

@@ -1,39 +1,23 @@
 import "./App.css";
 import AppRoutes from "./routes/AppRoutes";
-import { RecoilRoot } from "recoil";
+import { useRecoilState } from "recoil";
 import { Toaster } from "@/components/ui/sonner";
-import TRPCProvider from "./utils/trpc-provider";
+import { tagsState } from "./store/atoms/tags";
+import { useSession } from "@clerk/clerk-react";
+import { useEffect } from "react";
+import { trpc } from "./utils/trpc";
 
 export type TagGroup = {
   color: string;
   tags: string[];
   createdBy?: string;
-  createdAt: string;
+  createdAt?: string;
   id: number;
 };
 
 export type Category = {
   category: string;
 };
-
-// export const tags: TagGroup[] = [
-//   {
-//     color: "#000000",
-//     tags: ["TAG1", "TAG2", "TAG3"],
-//   },
-//   {
-//     color: "#262",
-//     tags: ["TAG4", "TAG5"],
-//   },
-//   {
-//     color: "#0724",
-//     tags: ["TAG6"],
-//   },
-//   {
-//     color: "#984",
-//     tags: ["TAG7"],
-//   },
-// ];
 
 export const categories: Category[] = [
   { category: "Category1" },
@@ -46,14 +30,27 @@ export const categories: Category[] = [
 ];
 
 function App() {
+  const { session, isLoaded } = useSession();
+  const [, setTagsData] = useRecoilState(tagsState);
+  const {
+    data: tags,
+    isLoading,
+    error,
+  } = trpc.tags.getTagsByUserId.useQuery(
+    { userId: session?.user.id as string }, // Input to the query
+    { enabled: isLoaded && !!session?.user.id } // Ensure query runs only when `userId` is available
+  );
+
+  useEffect(() => {
+    if (!isLoading && tags) {
+      setTagsData(tags); // Store fetched data in state
+    }
+  }, [isLoading, tags]);
+
   return (
     <>
-      <TRPCProvider>
-        <RecoilRoot>
-          <AppRoutes />
-        </RecoilRoot>
-        <Toaster />
-      </TRPCProvider>
+      <AppRoutes />
+      <Toaster />
     </>
   );
 }
