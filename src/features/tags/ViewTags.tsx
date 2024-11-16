@@ -11,14 +11,14 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ListView from "./ListView";
 import GroupView from "./GroupView";
-import { useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { tagsState } from "@/store/atoms/tags";
 import { trpc } from "@/utils/trpc";
 import { useSession } from "@clerk/clerk-react";
 export default function ViewTags() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [view, setView] = useState<string>("list");
-  const tagsData = useRecoilValue(tagsState); // Retrieve the Recoil state
+  const [tagsData, setTagsData] = useRecoilState(tagsState); // Retrieve the Recoil state
   const [availableTags, setAvailableTags] = useState<TagGroup[]>(tagsData); // Initialize state with Recoil value
   const deleteMutation = trpc.tags.deleteTagsByUserId.useMutation();
   const { isLoaded, session } = useSession();
@@ -58,6 +58,7 @@ export default function ViewTags() {
     }));
     updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
+    setTagsData(updatedTags);
     const tagsPayload = selectedTags.join(",");
     deleteTagsByUserId(tagsPayload);
   };
@@ -69,6 +70,7 @@ export default function ViewTags() {
     }));
     updatedTags = updatedTags.filter((tags) => tags.tags.length > 0);
     setAvailableTags(updatedTags); // Update available tags after deletion
+    setTagsData(updatedTags);
     deleteTagsByUserId(tagName);
   };
 
