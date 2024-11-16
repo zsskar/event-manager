@@ -82,12 +82,6 @@ export default function ViewTags() {
     );
   };
 
-  // Remove tag function
-  const handleRemoveCategory = (tag: string) => {
-    setSelectedTags((prevSelected) =>
-      prevSelected.filter((item) => item !== tag)
-    );
-  };
   const handleClearSelectedTags = () => {
     setSelectedTags([]); // Clear all selected tags
   };
@@ -103,20 +97,21 @@ export default function ViewTags() {
 
   // Function to handle tag deletion
   const handleDeleteSelectedTagBox = (color: string, tag: string) => {
-    setAvailableTags(
-      (prevTags) =>
-        prevTags
-          .map((group) => {
-            if (group.color === color) {
-              return {
-                ...group,
-                tags: group.tags.filter((item) => item !== tag),
-              };
-            }
-            return group;
-          })
-          .filter((group) => group.tags.length > 0) // Filter out color boxes with no tags
-    );
+    const updatedTags = availableTags
+      .map((group) => {
+        if (group.color === color) {
+          return {
+            ...group,
+            tags: group.tags.filter((item) => item !== tag),
+          };
+        }
+        return group;
+      })
+      .filter((group) => group.tags.length > 0); // Filter out color boxes with no tags
+
+    setAvailableTags(updatedTags);
+    setTagsData(updatedTags);
+    deleteTagsByUserId(tag);
   };
 
   const handleAllDeleteSelectedTagBox = () => {
@@ -189,11 +184,7 @@ export default function ViewTags() {
 
                       <button
                         className="text-red-500 hover:text-red-700 flex items-center"
-                        onClick={
-                          view == "list"
-                            ? handleDeleteSelectedTags
-                            : handleAllDeleteSelectedTagBox
-                        }
+                        onClick={handleDeleteSelectedTags}
                       >
                         <Trash2Icon className="h-5 w-5 mr-2" />
                         Delete Selected
