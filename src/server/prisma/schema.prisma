@@ -44,8 +44,8 @@ model Tag {
 }
 
 model Category {
-  id         Int      @id @default(autoincrement())  // Unique category identifier
-  name       String   @unique                       // Unique category name
-  createdAt  DateTime @default(now())               // Timestamp when category is created
-  createdBy  String   // Creator of the category
+  id              Int      @id @default(autoincrement())  // Unique category identifier
+  category       String   @unique                       // Unique category name
+  createdAt      DateTime @default(now())               // Timestamp when category is created
+  createdBy      String   // Creator of the category
 }

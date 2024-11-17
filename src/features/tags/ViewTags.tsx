@@ -1,7 +1,6 @@
 import { TagGroup } from "@/App";
 import {
   GridIcon,
-  Info,
   ListIcon,
   TextSelectIcon,
   Trash2Icon,
@@ -21,7 +20,7 @@ export default function ViewTags() {
   const [tagsData, setTagsData] = useRecoilState(tagsState); // Retrieve the Recoil state
   const [availableTags, setAvailableTags] = useState<TagGroup[]>(tagsData); // Initialize state with Recoil value
   const deleteMutation = trpc.tags.deleteTagsByUserId.useMutation();
-  const { isLoaded, session } = useSession();
+  const { session } = useSession();
 
   useEffect(() => {
     if (tagsData && tagsData.length > 0) {
@@ -37,14 +36,18 @@ export default function ViewTags() {
       },
       {
         onSuccess: () => {
-          // Clear the selected tags after deletion
           toast.success(
-            `${selectedTags.length == 1 ? "Tag" : "Tags"} deleted successfully`
+            `${selectedTags.length == 1 ? "Tag" : "Tags"} deleted successfully`,
+            {
+              position: "top-right",
+            }
           );
           setSelectedTags([]);
         },
         onError: (error) => {
-          toast.error("something went wrong !");
+          toast.error("Something went wrong !", {
+            position: "top-right",
+          });
           console.error("Failed to delete tags:", error);
         },
       }
@@ -112,11 +115,6 @@ export default function ViewTags() {
     setAvailableTags(updatedTags);
     setTagsData(updatedTags);
     deleteTagsByUserId(tag);
-  };
-
-  const handleAllDeleteSelectedTagBox = () => {
-    setAvailableTags([]);
-    setSelectedTags([]);
   };
 
   return (
@@ -197,11 +195,8 @@ export default function ViewTags() {
           </div>
         </>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
+        <div className="border border-gray-500 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
           <h3 className="text-lg text-center font-semibold text-gray-700 dark:text-gray-200">
-            {/* {availableTags?.length == 0 && !isLoading
-              ? "No Tags Available"
-              : "Loading..."} */}
             No Tags Available
           </h3>
         </div>

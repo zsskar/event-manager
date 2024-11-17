@@ -13,7 +13,7 @@ export function ContentLayout({ title, children }: ContentLayoutProps) {
 
       {/* Main Content Section */}
       <div className="container mx-auto pt-8 pb-8 px-4 sm:px-8">
-        <div className="bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
+        <div className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-6">
           {children}
         </div>
       </div>

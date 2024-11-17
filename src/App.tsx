@@ -6,6 +6,7 @@ import { tagsState } from "./store/atoms/tags";
 import { useSession } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import { trpc } from "./utils/trpc";
+import { categoryState } from "./store/atoms/category";
 
 export type TagGroup = {
   color: string;
@@ -17,35 +18,35 @@ export type TagGroup = {
 
 export type Category = {
   category: string;
+  createdBy?: string;
+  createdAt?: string;
+  id: number;
 };
-
-export const categories: Category[] = [
-  { category: "Category1" },
-  { category: "Category2" },
-  { category: "Category3" },
-  { category: "Category4" },
-  { category: "Category5" },
-  { category: "Category6" },
-  { category: "Category7" },
-];
 
 function App() {
   const { session, isLoaded } = useSession();
   const [, setTagsData] = useRecoilState(tagsState);
-  const {
-    data: tags,
-    isLoading,
-    error,
-  } = trpc.tags.getTagsByUserId.useQuery(
-    { userId: session?.user.id as string }, // Input to the query
-    { enabled: isLoaded && !!session?.user.id } // Ensure query runs only when `userId` is available
-  );
+  const [, setCategoriesData] = useRecoilState(categoryState);
+  const { data: tags, isLoading: isTagsLoading } =
+    trpc.tags.getTagsByUserId.useQuery(
+      { userId: session?.user.id as string }, // Input to the query
+      { enabled: isLoaded && !!session?.user.id } // Ensure query runs only when `userId` is available
+    );
+
+  const { data: categories, isLoading: isCategoriesLoading } =
+    trpc.category.getCategoriesByUserId.useQuery(
+      { userId: session?.user.id as string },
+      { enabled: isLoaded && !!session?.user.id }
+    );
 
   useEffect(() => {
-    if (!isLoading && tags) {
-      setTagsData(tags); // Store fetched data in state
+    if (!isTagsLoading && tags) {
+      setTagsData(tags);
     }
-  }, [isLoading, tags]);
+    if (!isCategoriesLoading && categories) {
+      setCategoriesData(categories);
+    }
+  }, [isTagsLoading, isCategoriesLoading, tags, categories]);
 
   return (
     <>

@@ -66,7 +66,9 @@ export default function AddTags() {
 
     mutation.mutate(tagsData, {
       onSuccess: (data) => {
-        toast("tags saved successfully.");
+        toast.success("Tags saved successfully.", {
+          position: "top-right",
+        });
         setTags((prev) => {
           return [...prev, data];
         });
@@ -74,14 +76,16 @@ export default function AddTags() {
         form.reset();
       },
       onError: (error) => {
-        toast("something went wrong.");
+        toast.error("Something went wrong.", {
+          position: "top-right",
+        });
         console.error("Error inserting data:", error);
         // Handle any error actions here, like showing an error message
       },
     });
   };
 
-  const handleColorChange = (color) => {
+  const handleColorChange = (color: { hex: string }) => {
     form.setValue("color", color.hex);
   };
 
@@ -90,7 +94,7 @@ export default function AddTags() {
   }, [form, inputTags]);
 
   return (
-    <div className="flex justify-center dark:bg-gray-900">
+    <div className="border border-gray-300 dark:border-gray-600flex justify-center dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-5 w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

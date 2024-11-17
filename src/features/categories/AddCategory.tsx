@@ -11,8 +11,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
 import { Input } from "@/components/ui/input";
+import { useSession } from "@clerk/clerk-react";
+import { trpc } from "@/utils/trpc";
+import { toast } from "sonner";
+import { useRecoilState } from "recoil";
+import { categoryState } from "@/store/atoms/category";
 
 const createFormSchema = (fieldName: string) =>
   z.object({
@@ -28,23 +32,46 @@ type FormData = {
 const formName = "category";
 const formSchema = createFormSchema(formName);
 
-export default function ViewCategories() {
-  const [category, setCategory] = useState<string>("");
-
+export default function AddCategory() {
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: { category: "" },
   });
+  const { session } = useSession();
+  const [, setCategory] = useRecoilState(categoryState);
+  const createMutation = trpc.category.insert.useMutation();
 
   const onSubmit = (data: FormData) => {
-    console.log("Form Submitted", data);
+    const categoryData = {
+      category: data.category,
+      createdBy: session?.user.id as string,
+    };
+    saveData(categoryData);
   };
-  useEffect(() => {
-    form.setValue("category", category);
-  }, [form, category]);
+
+  const saveData = (categoryData: { category: string; createdBy: string }) => {
+    createMutation.mutate(categoryData, {
+      onSuccess: (data) => {
+        toast.success("Category saved successfully.", {
+          position: "top-right",
+        });
+        setCategory((prev) => {
+          return [...prev, data];
+        });
+
+        form.reset();
+      },
+      onError: (error) => {
+        toast.error("Something went wrong.", {
+          position: "top-right",
+        });
+        console.error("Error inserting data:", error);
+      },
+    });
+  };
 
   return (
-    <div className="flex justify-center bg-gray-100 dark:bg-gray-900">
+    <div className="border border-gray-300 dark:border-gray-600 flex justify-center bg-gray-100 dark:bg-gray-900">
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 w-full">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
