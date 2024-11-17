@@ -1,7 +1,7 @@
 import Dashboard from "@/components/dashboard/Dashboard";
 import DashboardLayout from "@/components/layout/DashboardLayout";
 import LandingPage from "@/components/LandingPage";
-import MyCalendar from "@/features/MyCalender";
+import MyCalendar from "@/features/event/MyCalender";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Profile from "@/components/dashboard/Profile";
 import Categories from "../features/categories";

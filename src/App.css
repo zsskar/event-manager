@@ -92,3 +92,9 @@
 .dialog-overlay {
   @apply bg-black bg-opacity-50; /* Semi-transparent black overlay */
 }
+
+.rbc-day-bg:hover,
+.rbc-date-cell:hover,
+.rbc-row-segment:hover {
+  cursor: pointer;
+}
