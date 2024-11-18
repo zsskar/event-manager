@@ -92,8 +92,11 @@ export default function ViewCategories() {
     <>
       {availableCategories && availableCategories.length > 0 ? (
         <div className="flex justify-center dark:bg-gray-900">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 w-full  max-h-96 overflow-y-auto">
-            <div className="flex flex-wrap gap-3">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-2xl p-3 w-full  max-h-96 overflow-y-auto z-10 p-4">
+            <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+              Categories
+            </h3>
+            <div className="flex flex-wrap gap-3 mt-5">
               {categories.map((category, index) => (
                 <div
                   key={index}

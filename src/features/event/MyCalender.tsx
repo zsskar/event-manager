@@ -45,16 +45,28 @@ const availableTags = [
 const MyCalendar: React.FC = () => {
   const { theme } = useTheme();
   const today = new Date();
+  const normalizedToday = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [toDate, setToDate] = useState<Date>();
 
-  const [eventData, setEventData] = useState({
+  const [eventData, setEventData] = useState<{
+    name: string;
+    location: string;
+    fromDate: string;
+    toDate: string;
+    tags: string[]; // Ensure this is an array of strings
+    category: string;
+    description: string;
+  }>({
     name: "",
     location: "",
     fromDate: "",
     toDate: "",
-    tags: "",
+    tags: [], // Correctly initialized as an empty array
     category: "",
     description: "",
   });
@@ -94,27 +106,22 @@ const MyCalendar: React.FC = () => {
 
     setToDate(endDate);
 
-    setSelectedDate(clickedDate.getDate());
+    // setSelectedDate(clickedDate.getDate());
     setIsModalOpen(true);
   };
-
-  // const closeModal = () => {
-  //   setIsModalOpen(false);
-  //   setSelectedDate(null);
-  // };
-
-  // const handleSelectTags = (selectedTags: any) => {
-  //   setEventData({ ...eventData, tags: selectedTags });
-  // };
-
-  // const handleSelectCategory = (selectedCategory: any) => {
-  //   setEventData({ ...eventData, category: selectedCategory });
-  // };
 
   const handleSubmit = () => {
     // Handle form submission here, e.g., save event details
     console.log("Event Created:", eventData);
     setIsModalOpen(false); // Close dialog after submission
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEventData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   return (
@@ -141,10 +148,16 @@ const MyCalendar: React.FC = () => {
             selectable
             onSelectSlot={handleDateClick}
             dayPropGetter={(date) => {
-              if (date < today) {
+              const normalizedDate = new Date(
+                date.getFullYear(),
+                date.getMonth(),
+                date.getDate()
+              );
+
+              if (normalizedDate < normalizedToday) {
                 return {
                   style: {
-                    backgroundColor: "#f5f5f5", // Light gray for past dates
+                    backgroundColor: "#9999", // Light gray for past dates
                     color: "#999", // Muted text color
                     pointerEvents: "none", // Disable interactions
                   },
@@ -177,6 +190,7 @@ const MyCalendar: React.FC = () => {
                   id="name"
                   name="name"
                   value={eventData.name}
+                  onChange={handleInputChange}
                   className="col-span-3"
                   placeholder="Event Name"
                 />
@@ -191,6 +205,7 @@ const MyCalendar: React.FC = () => {
                   id="location"
                   name="location"
                   value={eventData.location}
+                  onChange={handleInputChange} // Add this
                   className="col-span-3"
                   placeholder="Location"
                 />
@@ -231,7 +246,12 @@ const MyCalendar: React.FC = () => {
                     isMulti
                     closeMenuOnSelect={false}
                     options={availableTags}
-                    onChange={() => {}}
+                    onChange={(selected) =>
+                      setEventData((prev) => ({
+                        ...prev,
+                        tags: selected.map((tag) => tag.value),
+                      }))
+                    }
                     className="w-full"
                   />
                 </div>
@@ -245,7 +265,12 @@ const MyCalendar: React.FC = () => {
                 <div className="col-span-3">
                   <Select
                     options={categories}
-                    onChange={() => {}}
+                    onChange={(selected) =>
+                      setEventData((prev) => ({
+                        ...prev,
+                        category: selected?.value || "",
+                      }))
+                    }
                     className="w-full"
                   />
                 </div>
