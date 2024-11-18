@@ -12,10 +12,12 @@ import {
 } from "@/components/ui/popover";
 
 export function DatePicker({
+  startDate,
   placeholder,
   date,
   setToDate,
 }: {
+  startDate?: Date;
   placeholder: string;
   date: Date;
   setToDate: React.Dispatch<React.SetStateAction<Date | undefined>>;
@@ -42,7 +44,9 @@ export function DatePicker({
           selected={date}
           onSelect={setToDate}
           initialFocus
-          disabled={(currentDate) => date >= currentDate}
+          disabled={(currentDate) =>
+            (startDate != undefined ? startDate : currentDate) > currentDate
+          }
         />
       </PopoverContent>
     </Popover>

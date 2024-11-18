@@ -44,7 +44,7 @@ const availableTags = [
 
 const MyCalendar: React.FC = () => {
   const { theme } = useTheme();
-  const today = new Date().getDate();
+  const today = new Date();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
   const [toDate, setToDate] = useState<Date>();
@@ -54,8 +54,8 @@ const MyCalendar: React.FC = () => {
     location: "",
     fromDate: "",
     toDate: "",
-    tags: availableTags,
-    category: categories,
+    tags: "",
+    category: "",
     description: "",
   });
 
@@ -79,33 +79,37 @@ const MyCalendar: React.FC = () => {
   // ]);
 
   const handleDateClick = (slotInfo: SlotInfo) => {
-    const clickedDate = slotInfo.start.getDate();
+    const { start, end } = slotInfo;
+    const endDate = new Date(end.getTime() - 24 * 60 * 60 * 1000);
+
+    const clickedDate = start;
     if (clickedDate < today) {
       return;
     }
     setEventData((prev) => ({
       ...prev,
       fromDate: slotInfo.start.toString(),
+      toDate: endDate.toString(),
     }));
 
-    setToDate(slotInfo.start);
+    setToDate(endDate);
 
-    setSelectedDate(clickedDate);
+    setSelectedDate(clickedDate.getDate());
     setIsModalOpen(true);
   };
 
-  const closeModal = () => {
-    setIsModalOpen(false);
-    setSelectedDate(null);
-  };
+  // const closeModal = () => {
+  //   setIsModalOpen(false);
+  //   setSelectedDate(null);
+  // };
 
-  const handleSelectTags = (selectedTags: any) => {
-    setEventData({ ...eventData, tags: selectedTags });
-  };
+  // const handleSelectTags = (selectedTags: any) => {
+  //   setEventData({ ...eventData, tags: selectedTags });
+  // };
 
-  const handleSelectCategory = (selectedCategory: any) => {
-    setEventData({ ...eventData, category: selectedCategory });
-  };
+  // const handleSelectCategory = (selectedCategory: any) => {
+  //   setEventData({ ...eventData, category: selectedCategory });
+  // };
 
   const handleSubmit = () => {
     // Handle form submission here, e.g., save event details
@@ -137,7 +141,7 @@ const MyCalendar: React.FC = () => {
             selectable
             onSelectSlot={handleDateClick}
             dayPropGetter={(date) => {
-              if (date.getDate() < today) {
+              if (date < today) {
                 return {
                   style: {
                     backgroundColor: "#f5f5f5", // Light gray for past dates
@@ -210,7 +214,8 @@ const MyCalendar: React.FC = () => {
                   To Date
                 </Label>
                 <DatePicker
-                  date={toDate || new Date(eventData.fromDate)}
+                  startDate={new Date(eventData.fromDate)}
+                  date={toDate || new Date(eventData.toDate)}
                   placeholder="To Date"
                   setToDate={setToDate}
                 />
@@ -224,8 +229,9 @@ const MyCalendar: React.FC = () => {
                 <div className="col-span-3">
                   <Select
                     isMulti
-                    value={eventData.tags}
-                    onChange={handleSelectTags}
+                    closeMenuOnSelect={false}
+                    options={availableTags}
+                    onChange={() => {}}
                     className="w-full"
                   />
                 </div>
@@ -239,8 +245,7 @@ const MyCalendar: React.FC = () => {
                 <div className="col-span-3">
                   <Select
                     options={categories}
-                    value={eventData.category}
-                    onChange={handleSelectCategory}
+                    onChange={() => {}}
                     className="w-full"
                   />
                 </div>
