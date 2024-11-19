@@ -23,6 +23,28 @@ export type Category = {
   id: number;
 };
 
+export type EventStatus = {
+  PLANNED: "PLANNED";
+  ONGOING: "ONGOING";
+  COMPLETED: "COMPLETED";
+  CANCELED: "CANCELED";
+};
+
+export type Event = {
+  category: string | null;
+  name: string;
+  createdBy: string;
+  location: string | null;
+  fromDate: string;
+  toDate: string;
+  description: string | null;
+  tags: string | null;
+  status: EventStatus | string;
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+};
+
 function App() {
   const { session, isLoaded } = useSession();
   const [, setTagsData] = useRecoilState(tagsState);

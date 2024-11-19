@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Calendar, momentLocalizer, SlotInfo } from "react-big-calendar";
 import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
@@ -18,10 +18,18 @@ import { Button } from "@/components/ui/button";
 import Select from "react-select";
 import { DatePicker } from "./DatePicker";
 import { Textarea } from "@/components/ui/textarea";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { categoryState } from "@/store/atoms/category";
+import { tagsState } from "@/store/atoms/tags";
+import { trpc } from "@/utils/trpc";
+import { toast } from "sonner";
+import { useSession } from "@clerk/clerk-react";
+import { eventState } from "@/store/atoms/event";
+import { Event } from "@/App";
 
 const localizer = momentLocalizer(moment);
 
-interface Event {
+interface EventTypeCalender {
   id: number;
   title: string;
   start: Date;
@@ -29,18 +37,16 @@ interface Event {
   allDay?: boolean;
 }
 
-const categories = [
-  { value: "category1", label: "Category 1" },
-  { value: "category2", label: "Category 2" },
-  { value: "category3", label: "Category 3" },
-];
-
-const availableTags = [
-  { value: "tag1", label: "Tag 1" },
-  { value: "tag2", label: "Tag 2" },
-  { value: "tag3", label: "Tag 3" },
-  { value: "tag4", label: "Tag 4" },
-];
+type EventType = {
+  name: string;
+  location: string;
+  fromDate: string;
+  toDate: string;
+  tags: string;
+  category: string;
+  description: string;
+  createdBy: string;
+};
 
 const MyCalendar: React.FC = () => {
   const { theme } = useTheme();
@@ -52,6 +58,50 @@ const MyCalendar: React.FC = () => {
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toDate, setToDate] = useState<Date>();
+  const categories = useRecoilValue(categoryState);
+  const [availableEvents, setAvailableEvents] = useState<EventTypeCalender[]>(
+    []
+  );
+  const tags = useRecoilValue(tagsState);
+  const [, setEvents] = useRecoilState(eventState);
+  const createMutation = trpc.calender.createEvent.useMutation();
+  const { session, isLoaded } = useSession();
+
+  const { data: eventsData, isLoading } =
+    trpc.calender.getAllEventsByUserId.useQuery(
+      { userId: session?.user.id as string },
+      { enabled: isLoaded && !!session?.user.id }
+    );
+
+  const transformEvents = (eventData: Event[]): EventTypeCalender[] =>
+    eventData.map((event) => ({
+      id: event.id,
+      title: event.name,
+      start: new Date(event.fromDate),
+      end: new Date(event.toDate),
+      allDay: false,
+    }));
+
+  useEffect(() => {
+    if (!isLoading && eventsData) {
+      // Transform events and set states
+      const transformed = transformEvents(eventsData.events);
+      setEvents(eventsData.events); // Keep the raw data for backend consistency
+      setAvailableEvents(transformed); // Store transformed events for the calendar
+    }
+  }, [eventsData, isLoading]);
+
+  const availableCategories = categories.map((c) => {
+    return { value: c.category, label: c.category };
+  });
+
+  const availableTags = tags.flatMap((group) =>
+    group.tags.map((tag) => ({
+      value: tag,
+      label: tag,
+      color: group.color,
+    }))
+  );
 
   const [eventData, setEventData] = useState<{
     name: string;
@@ -105,15 +155,37 @@ const MyCalendar: React.FC = () => {
     }));
 
     setToDate(endDate);
-
-    // setSelectedDate(clickedDate.getDate());
     setIsModalOpen(true);
   };
 
   const handleSubmit = () => {
-    // Handle form submission here, e.g., save event details
-    console.log("Event Created:", eventData);
-    setIsModalOpen(false); // Close dialog after submission
+    const updatedData = {
+      ...eventData,
+      tags: eventData.tags.join(","),
+      createdBy: session?.user.id as string,
+    };
+    // console.log("Event Created:", updatedData);
+    createEvent(updatedData);
+  };
+
+  const createEvent = (eventData: EventType) => {
+    createMutation.mutate(eventData, {
+      onSuccess: (data) => {
+        toast.success("Event created successfully.", {
+          position: "top-right",
+        });
+        console.log("Created Event :", data);
+        const transformed = transformEvents([data.event]);
+        setAvailableEvents((prev) => [...prev, ...transformed]);
+        setIsModalOpen(false);
+      },
+      onError: (error) => {
+        toast.error("Something went wrong.", {
+          position: "top-right",
+        });
+        console.error("Error inserting data:", error);
+      },
+    });
   };
 
   const handleInputChange = (e) => {
@@ -123,6 +195,12 @@ const MyCalendar: React.FC = () => {
       [name]: value,
     }));
   };
+
+  const disableButton =
+    eventData.category.length == 0 ||
+    eventData.name.length == 0 ||
+    eventData.tags.length == 0 ||
+    eventData.category.length == 0;
 
   return (
     <ContentLayout title="My Calendar">
@@ -136,6 +214,7 @@ const MyCalendar: React.FC = () => {
             localizer={localizer}
             startAccessor="start"
             endAccessor="end"
+            events={availableEvents}
             defaultView="month"
             style={{
               height: "100%",
@@ -187,6 +266,7 @@ const MyCalendar: React.FC = () => {
                   Event Name
                 </Label>
                 <Input
+                  required={true}
                   id="name"
                   name="name"
                   value={eventData.name}
@@ -202,6 +282,7 @@ const MyCalendar: React.FC = () => {
                   Location
                 </Label>
                 <Input
+                  required={true}
                   id="location"
                   name="location"
                   value={eventData.location}
@@ -241,9 +322,24 @@ const MyCalendar: React.FC = () => {
                 <Label htmlFor="tags" className="text-right">
                   Tags
                 </Label>
-                <div className="col-span-3">
+                <div className="col-span-3 border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
                   <Select
+                    required={true}
                     isMulti
+                    formatOptionLabel={(e) => (
+                      <div style={{ display: "flex", alignItems: "center" }}>
+                        <div
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: e.color,
+                            marginRight: "8px",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                        {e.label}
+                      </div>
+                    )}
                     closeMenuOnSelect={false}
                     options={availableTags}
                     onChange={(selected) =>
@@ -262,9 +358,10 @@ const MyCalendar: React.FC = () => {
                 <Label htmlFor="category" className="text-right">
                   Category
                 </Label>
-                <div className="col-span-3">
+                <div className="col-span-3 border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm">
                   <Select
-                    options={categories}
+                    required={true}
+                    options={availableCategories}
                     onChange={(selected) =>
                       setEventData((prev) => ({
                         ...prev,
@@ -292,7 +389,9 @@ const MyCalendar: React.FC = () => {
             </div>
 
             <DialogFooter>
-              <Button onClick={handleSubmit}>Save Event</Button>
+              <Button onClick={handleSubmit} disabled={disableButton}>
+                Save Event
+              </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
