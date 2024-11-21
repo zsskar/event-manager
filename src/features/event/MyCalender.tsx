@@ -26,6 +26,12 @@ import { toast } from "sonner";
 import { useSession } from "@clerk/clerk-react";
 import { eventState } from "@/store/atoms/event";
 import { Event } from "@/App";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 const localizer = momentLocalizer(moment);
 
@@ -108,7 +114,7 @@ const MyCalendar: React.FC = () => {
     location: string;
     fromDate: string;
     toDate: string;
-    tags: string[]; // Ensure this is an array of strings
+    tags: string[];
     category: string;
     description: string;
   }>({
@@ -142,6 +148,7 @@ const MyCalendar: React.FC = () => {
 
   const handleDateClick = (slotInfo: SlotInfo) => {
     const { start, end } = slotInfo;
+
     const endDate = new Date(end.getTime() - 24 * 60 * 60 * 1000);
 
     const clickedDate = start;
@@ -162,6 +169,15 @@ const MyCalendar: React.FC = () => {
     const updatedData = {
       ...eventData,
       tags: eventData.tags.join(","),
+      toDate:
+        new Date(eventData.fromDate).getDate() !=
+        new Date(eventData.toDate).getDate()
+          ? new Date(
+              new Date(eventData.toDate).setDate(
+                new Date(eventData.toDate).getDate() + 1
+              )
+            ).toString()
+          : new Date(eventData.toDate).toString(),
       createdBy: session?.user.id as string,
     };
     // console.log("Event Created:", updatedData);
@@ -177,6 +193,15 @@ const MyCalendar: React.FC = () => {
         console.log("Created Event :", data);
         const transformed = transformEvents([data.event]);
         setAvailableEvents((prev) => [...prev, ...transformed]);
+        setEventData({
+          name: "",
+          location: "",
+          fromDate: "",
+          toDate: "",
+          tags: [], // Correctly initialized as an empty array
+          category: "",
+          description: "",
+        });
         setIsModalOpen(false);
       },
       onError: (error) => {
@@ -211,6 +236,10 @@ const MyCalendar: React.FC = () => {
           }`}
         >
           <Calendar
+            tooltipAccessor={null} // Disable default tooltips
+            components={{
+              event: EventWithPopover, // Custom event rendering
+            }}
             localizer={localizer}
             startAccessor="start"
             endAccessor="end"
@@ -236,6 +265,8 @@ const MyCalendar: React.FC = () => {
               if (normalizedDate < normalizedToday) {
                 return {
                   style: {
+                    height: "100%", // Full height of the parent container
+                    padding: "2rem",
                     backgroundColor: "#9999", // Light gray for past dates
                     color: "#999", // Muted text color
                     pointerEvents: "none", // Disable interactions
@@ -244,8 +275,14 @@ const MyCalendar: React.FC = () => {
               }
               return {};
             }}
+            // onSelectEvent={(event) => {
+            //   console.log("Event Details:", event); // Logs the details to the console
+            //   alert(
+            //     `Event Details: \nTitle: ${event.title}\nStart: ${event.start}\nEnd: ${event.end}`
+            //   );
+            // }}
             // onDoubleClickEvent={handleDoubleClickEvent}
-            className="shadow-md rounded-md"
+            className="shadow-md rounded-md overflow-auto" // Ensure scrollable area
           />
         </div>
       </div>
@@ -401,3 +438,77 @@ const MyCalendar: React.FC = () => {
 };
 
 export default MyCalendar;
+
+const EventWithPopover = ({ event }) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
+
+  const handleMouseEnter = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setPopoverPosition({
+      top: rect.top - 10, // Slightly above the event
+      left: rect.left + rect.width / 2, // Center horizontally
+    });
+    setIsPopoverOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    setIsPopoverOpen(false);
+  };
+
+  const formatDate = (date: string) => {
+    return new Intl.DateTimeFormat("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    }).format(new Date(date));
+  };
+
+  return (
+    <div
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+      className="relative cursor-pointer"
+    >
+      <span className="px-2 py-10 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+        {event.title}
+      </span>
+      {isPopoverOpen && (
+        <Popover open={isPopoverOpen}>
+          <PopoverContent
+            style={{
+              position: "absolute",
+              top: popoverPosition.top,
+              left: popoverPosition.left,
+              transform: "translate(-50%, -100%)",
+              zIndex: 10,
+            }}
+            className={cn(
+              "w-64 bg-white shadow-lg rounded-md p-4 transition-all duration-300 transform",
+              isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
+            )}
+          >
+            <h3 className="font-bold text-lg text-gray-800 mb-2">
+              {event.title}
+            </h3>
+            <p className="text-sm text-gray-600">
+              <strong>Start:</strong> {formatDate(event.start)}
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>End:</strong>{" "}
+              {formatDate(
+                new Date(
+                  new Date(event.end).setDate(new Date(event.end).getDate() - 1)
+                ).toString()
+              )}
+            </p>
+            <div
+              className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow"
+              style={{ zIndex: -1 }}
+            ></div>
+          </PopoverContent>
+        </Popover>
+      )}
+    </div>
+  );
+};
