@@ -26,12 +26,9 @@ import { toast } from "sonner";
 import { useSession } from "@clerk/clerk-react";
 import { eventState } from "@/store/atoms/event";
 import { Event } from "@/App";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { ViewEventDetails } from "./ViewEventDetailsSheet";
 
 const localizer = momentLocalizer(moment);
 
@@ -65,19 +62,25 @@ const MyCalendar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [toDate, setToDate] = useState<Date>();
   const categories = useRecoilValue(categoryState);
+  const tags = useRecoilValue(tagsState);
+  const [openSheet, setOpenSheet] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event>();
   const [availableEvents, setAvailableEvents] = useState<EventTypeCalender[]>(
     []
   );
-  const tags = useRecoilValue(tagsState);
-  const [, setEvents] = useRecoilState(eventState);
+
+  const [events, setEvents] = useRecoilState(eventState);
   const createMutation = trpc.calender.createEvent.useMutation();
   const { session, isLoaded } = useSession();
 
-  const { data: eventsData, isLoading } =
-    trpc.calender.getAllEventsByUserId.useQuery(
-      { userId: session?.user.id as string },
-      { enabled: isLoaded && !!session?.user.id }
-    );
+  const {
+    data: eventsData,
+    isLoading,
+    error,
+  } = trpc.calender.getAllEventsByUserId.useQuery(
+    { userId: session?.user.id as string },
+    { enabled: isLoaded && !!session?.user.id }
+  );
 
   const transformEvents = (eventData: Event[]): EventTypeCalender[] =>
     eventData.map((event) => ({
@@ -94,6 +97,9 @@ const MyCalendar: React.FC = () => {
       const transformed = transformEvents(eventsData.events);
       setEvents(eventsData.events); // Keep the raw data for backend consistency
       setAvailableEvents(transformed); // Store transformed events for the calendar
+    }
+    if (error) {
+      toast.error("Error loading events");
     }
   }, [eventsData, isLoading]);
 
@@ -198,10 +204,11 @@ const MyCalendar: React.FC = () => {
           location: "",
           fromDate: "",
           toDate: "",
-          tags: [], // Correctly initialized as an empty array
+          tags: [],
           category: "",
           description: "",
         });
+        setEvents((prev) => [...prev, data.event]);
         setIsModalOpen(false);
       },
       onError: (error) => {
@@ -275,12 +282,14 @@ const MyCalendar: React.FC = () => {
               }
               return {};
             }}
-            // onSelectEvent={(event) => {
-            //   console.log("Event Details:", event); // Logs the details to the console
-            //   alert(
-            //     `Event Details: \nTitle: ${event.title}\nStart: ${event.start}\nEnd: ${event.end}`
-            //   );
-            // }}
+            onSelectEvent={(theSelectedEvent) => {
+              console.log("Select event :", theSelectedEvent);
+              const selectedEvent = events.find(
+                (event) => event.id === theSelectedEvent.id
+              );
+              setSelectedEvent(selectedEvent);
+              setOpenSheet(!openSheet);
+            }}
             // onDoubleClickEvent={handleDoubleClickEvent}
             className="shadow-md rounded-md overflow-auto" // Ensure scrollable area
           />
@@ -433,6 +442,14 @@ const MyCalendar: React.FC = () => {
           </DialogContent>
         </Dialog>
       )}
+      {selectedEvent && (
+        <ViewEventDetails
+          openSheet={openSheet}
+          setOpenSheet={setOpenSheet}
+          selectedEvent={selectedEvent}
+        />
+      )}
+      ;
     </ContentLayout>
   );
 };
@@ -470,7 +487,7 @@ const EventWithPopover = ({ event }) => {
       onMouseLeave={handleMouseLeave}
       className="relative cursor-pointer"
     >
-      <span className="px-2 py-10 bg-blue-500 text-white rounded hover:bg-blue-600 transition duration-200">
+      <span className="px-10 py-10 text-bold  text-white rounded hover:bg-blue-600 transition duration-200">
         {event.title}
       </span>
       {isPopoverOpen && (
