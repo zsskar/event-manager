@@ -29,6 +29,7 @@ import { Event } from "@/App";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { ViewEventDetails } from "./ViewEventDetailsSheet";
+import { EventWithPopover } from "./EventPopover";
 
 const localizer = momentLocalizer(moment);
 
@@ -171,6 +172,18 @@ const MyCalendar: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const clearForm = () => {
+    setEventData({
+      name: "",
+      location: "",
+      fromDate: "",
+      toDate: "",
+      tags: [],
+      category: "",
+      description: "",
+    });
+  };
+
   const handleSubmit = () => {
     const updatedData = {
       ...eventData,
@@ -199,15 +212,7 @@ const MyCalendar: React.FC = () => {
         console.log("Created Event :", data);
         const transformed = transformEvents([data.event]);
         setAvailableEvents((prev) => [...prev, ...transformed]);
-        setEventData({
-          name: "",
-          location: "",
-          fromDate: "",
-          toDate: "",
-          tags: [],
-          category: "",
-          description: "",
-        });
+        clearForm();
         setEvents((prev) => [...prev, data.event]);
         setIsModalOpen(false);
       },
@@ -296,7 +301,13 @@ const MyCalendar: React.FC = () => {
         </div>
       </div>
       {isModalOpen && (
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <Dialog
+          open={isModalOpen}
+          onOpenChange={() => {
+            clearForm();
+            setIsModalOpen((prev) => !prev);
+          }}
+        >
           <DialogContent className="sm:max-w-[600px]">
             <DialogHeader>
               <DialogTitle>Create Event</DialogTitle>
@@ -317,7 +328,11 @@ const MyCalendar: React.FC = () => {
                   name="name"
                   value={eventData.name}
                   onChange={handleInputChange}
-                  className="col-span-3"
+                  className={`col-span-3 ${
+                    isDarkMode
+                      ? "border-gray-700 bg-gray-800 text-white"
+                      : "border-input bg-background text-black"
+                  }`}
                   placeholder="Event Name"
                 />
               </div>
@@ -333,7 +348,11 @@ const MyCalendar: React.FC = () => {
                   name="location"
                   value={eventData.location}
                   onChange={handleInputChange} // Add this
-                  className="col-span-3"
+                  className={`col-span-3 ${
+                    isDarkMode
+                      ? "border-gray-700 bg-gray-800 text-white"
+                      : "border-input bg-background text-black"
+                  }`}
                   placeholder="Location"
                 />
               </div>
@@ -368,7 +387,13 @@ const MyCalendar: React.FC = () => {
                 <Label htmlFor="tags" className="text-right">
                   Tags
                 </Label>
-                <div className="col-span-3 border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm">
+                <div
+                  className={`col-span-3 border ${
+                    isDarkMode
+                      ? "border-gray-700 bg-gray-800 text-white"
+                      : "border-input bg-background text-black"
+                  } ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`}
+                >
                   <Select
                     required={true}
                     isMulti
@@ -394,17 +419,50 @@ const MyCalendar: React.FC = () => {
                         tags: selected.map((tag) => tag.value),
                       }))
                     }
-                    className="w-full"
+                    classNamePrefix="custom-select"
+                    className={`w-full ${
+                      isDarkMode
+                        ? "custom-select-dark" // Custom styles for dark theme
+                        : "custom-select-light" // Custom styles for light theme
+                    }`}
+                    styles={{
+                      control: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                      menu: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      }),
+                      option: (baseStyles, state) => ({
+                        ...baseStyles,
+                        backgroundColor: state.isFocused
+                          ? isDarkMode
+                            ? "#4A5568"
+                            : "#E2E8F0"
+                          : isDarkMode
+                          ? "#2D3748"
+                          : "#FFFFFF",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                    }}
                   />
                 </div>
               </div>
 
-              {/* Category (Dropdown) */}
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="category" className="text-right">
                   Category
                 </Label>
-                <div className="col-span-3 border border-input bg-background ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm">
+                <div
+                  className={`col-span-3 border ${
+                    isDarkMode
+                      ? "border-gray-700 bg-gray-800 text-white"
+                      : "border-input bg-background text-black"
+                  } ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm`}
+                >
                   <Select
                     required={true}
                     options={availableCategories}
@@ -414,7 +472,41 @@ const MyCalendar: React.FC = () => {
                         category: selected?.value || "",
                       }))
                     }
-                    className="w-full"
+                    classNamePrefix="custom-select"
+                    className={`w-full ${
+                      isDarkMode ? "custom-select-dark" : "custom-select-light"
+                    }`}
+                    styles={{
+                      control: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                      menu: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      }),
+                      option: (baseStyles, state) => ({
+                        ...baseStyles,
+                        backgroundColor: state.isFocused
+                          ? isDarkMode
+                            ? "#4A5568"
+                            : "#E2E8F0"
+                          : isDarkMode
+                          ? "#2D3748"
+                          : "#FFFFFF",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                      singleValue: (baseStyles) => ({
+                        ...baseStyles,
+                        color: isDarkMode ? "#FFFFFF" : "#000000", // Ensures selected value text color respects theme
+                      }),
+                      placeholder: (baseStyles) => ({
+                        ...baseStyles,
+                        color: isDarkMode ? "#A0AEC0" : "#718096", // Matches muted text color for each theme
+                      }),
+                    }}
                   />
                 </div>
               </div>
@@ -428,7 +520,17 @@ const MyCalendar: React.FC = () => {
                   id="description"
                   name="description"
                   value={eventData.description}
-                  className="col-span-3 p-2 border rounded-md"
+                  onChange={(e) =>
+                    setEventData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
+                  className={`col-span-3 p-2 border rounded-md ${
+                    isDarkMode
+                      ? "bg-gray-800 text-white border-gray-700 placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500"
+                      : "bg-white text-black border-gray-300 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                  } focus:ring-2`}
                   placeholder="Event Description"
                 />
               </div>
@@ -455,77 +557,3 @@ const MyCalendar: React.FC = () => {
 };
 
 export default MyCalendar;
-
-const EventWithPopover = ({ event }) => {
-  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
-  const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
-
-  const handleMouseEnter = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    setPopoverPosition({
-      top: rect.top - 10, // Slightly above the event
-      left: rect.left + rect.width / 2, // Center horizontally
-    });
-    setIsPopoverOpen(true);
-  };
-
-  const handleMouseLeave = () => {
-    setIsPopoverOpen(false);
-  };
-
-  const formatDate = (date: string) => {
-    return new Intl.DateTimeFormat("en-GB", {
-      day: "2-digit",
-      month: "short",
-      year: "numeric",
-    }).format(new Date(date));
-  };
-
-  return (
-    <div
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      className="relative cursor-pointer"
-    >
-      <span className="px-10 py-10 text-bold  text-white rounded hover:bg-blue-600 transition duration-200">
-        {event.title}
-      </span>
-      {isPopoverOpen && (
-        <Popover open={isPopoverOpen}>
-          <PopoverContent
-            style={{
-              position: "absolute",
-              top: popoverPosition.top,
-              left: popoverPosition.left,
-              transform: "translate(-50%, -100%)",
-              zIndex: 10,
-            }}
-            className={cn(
-              "w-64 bg-white shadow-lg rounded-md p-4 transition-all duration-300 transform",
-              isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
-            )}
-          >
-            <h3 className="font-bold text-lg text-gray-800 mb-2">
-              {event.title}
-            </h3>
-            <p className="text-sm text-gray-600">
-              <strong>Start:</strong> {formatDate(event.start)}
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>End:</strong>{" "}
-              {formatDate(
-                new Date(
-                  new Date(event.end).setDate(new Date(event.end).getDate() - 1)
-                ).toString()
-              )}
-            </p>
-            <div
-              className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow"
-              style={{ zIndex: -1 }}
-            ></div>
-          </PopoverContent>
-        </Popover>
-      )}
-    </div>
-  );
-};
