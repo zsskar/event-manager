@@ -123,3 +123,261 @@
   line-height: 10px;
   vertical-align: middle;
 } */
+
+.fc-more-popover {
+  background-color: #f9f9f9; /* Light gray background */
+  padding: 8px; /* Add padding */
+  font-size: 14px; /* Adjust font size */
+  color: #333; /* Change text color */
+}
+
+.fc-toolbar {
+  @apply flex justify-between items-center mb-4;
+}
+
+.fc-day {
+  @apply border border-gray-300;
+}
+
+.fc-event {
+  @apply bg-blue-500 text-white rounded-md px-2 py-1;
+}
+
+/* Default (Light Theme) */
+.fc {
+  @apply bg-white text-gray-800 border-gray-300;
+}
+.fc-event {
+  @apply bg-blue-500 text-white rounded;
+}
+
+/* Dark Mode */
+.dark .fc {
+  @apply bg-gray-900 text-gray-100 border-gray-700;
+}
+.dark .fc-event {
+  @apply bg-blue-400 text-white rounded;
+}
+
+.fc-event {
+  background-color: #007bff !important; /* Custom blue */
+  color: white !important; /* White text */
+  border-radius: 6px !important; /* Rounded corners */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
+  padding: 4px 8px !important; /* Padding for better spacing */
+}
+
+.fc-event:hover {
+  background-color: #0056b3 !important; /* Darker blue on hover */
+}
+
+.fc-popover {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  padding: 10px;
+}
+
+.fc-popover .fc-event {
+  background-color: #007bff !important;
+  color: white !important;
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.fc-popover .fc-event:hover {
+  background-color: #0056b3 !important;
+}
+
+.fc-toolbar-title {
+  font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+  .fc-toolbar-title {
+    font-size: 0.8rem;
+  }
+
+  .fc-daygrid-event {
+    font-size: 12px;
+    padding: 2px;
+  }
+}
+
+.fc-view {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.fc-view-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.fc-view-leave {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.fc-daygrid-day {
+  background-color: #f9f9f9;
+  transition: background-color 0.3s;
+}
+
+.fc-daygrid-day:hover {
+  background-color: #e0e0e0;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Custom Scrollbar for WebKit Browsers (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+  width: 12px; /* Scrollbar width */
+}
+
+::-webkit-scrollbar-track {
+  background: #f4f4f4; /* Background of the track */
+  border-radius: 10px; /* Rounded corners */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: gray; /* Color of the scrollbar */
+  border-radius: 10px; /* Rounded scrollbar */
+  border: 2px solid #f4f4f4; /* Adds padding effect */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: gray; /* Darker color on hover */
+}
+
+/* For Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: gray #f4f4f4; /* Thumb color | Track color */
+}
+
+/* Light Theme */
+.light .fc {
+  --fc-bg-color: #ffffff; /* Background */
+  --fc-border-color: #e5e7eb; /* Border */
+  --fc-event-bg-color: #007bff; /* Event background */
+  --fc-event-text-color: #ffffff; /* Event text */
+  --fc-text-color: #374151; /* General text */
+}
+
+/* Dark Theme */
+.dark .fc {
+  --fc-bg-color: #1f2937; /* Background */
+  --fc-border-color: #374151; /* Border */
+  --fc-event-bg-color: #3b82f6; /* Event background */
+  --fc-event-text-color: #ffffff; /* Event text */
+  --fc-text-color: #f3f4f6; /* General text */
+}
+
+/* Light Theme */
+.light {
+  --fc-day-bg: #ffffff; /* Default day background */
+  --fc-day-hover-bg: #f1f5f9; /* Hover day background */
+  --fc-day-border: #e2e8f0; /* Border color */
+  --fc-day-text: #1e293b; /* Default text color */
+  --fc-daygrid-day-bg: #ffffff; /* Day grid background */
+  --fc-future-day-text: #64748b; /* Future days text */
+  --fc-more-link-bg: #f9fafb; /* Background color for 'more' link */
+  --fc-more-link-hover-bg: #e2e8f0; /* Hover background color */
+  --fc-more-link-text: #1e293b; /* Text color */
+  --fc-more-link-hover-text: #0f172a; /* Hover text color */
+}
+
+/* Dark Theme */
+.dark {
+  --fc-day-bg: #1e293b; /* Default day background */
+  --fc-day-hover-bg: #2d3748; /* Hover day background */
+  --fc-day-border: #374151; /* Border color */
+  --fc-day-text: #f3f4f6; /* Default text color */
+  --fc-daygrid-day-bg: #1f2937; /* Day grid background */
+  --fc-future-day-text: #94a3b8; /* Future days text */
+  --fc-more-link-bg: #2d3748; /* Background color for 'more' link */
+  --fc-more-link-hover-bg: #4a5568; /* Hover background color */
+  --fc-more-link-text: #f3f4f6; /* Text color */
+  --fc-more-link-hover-text: #e2e8f0; /* Hove
+}
+
+/* Applying colors dynamically */
+  .fc {
+    background-color: var(--fc-bg-color);
+    color: var(--fc-text-color);
+    border: 1px solid var(--fc-border-color);
+  }
+
+  .fc-event {
+    background-color: var(--fc-event-bg-color);
+    color: var(--fc-event-text-color);
+    border-radius: 4px;
+  }
+
+  /* Light Theme */
+  .light .fc-popover {
+    background-color: #ffffff;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+  }
+
+  /* Dark Theme */
+  .dark .fc-popover {
+    background-color: #1f2937;
+    color: #f3f4f6;
+    border: 1px solid #374151;
+  }
+
+  /* General Day Styling */
+  .fc-day {
+    background-color: var(--fc-day-bg);
+    color: var(--fc-day-text);
+    border: 1px solid var(--fc-day-border);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  .fc-day:hover {
+    background-color: var(--fc-day-hover-bg);
+  }
+
+  /* Day Specific Styling */
+  .fc-day-mon {
+    font-weight: bold;
+    background-color: var(--fc-daygrid-day-bg);
+  }
+
+  .fc-day-future {
+    color: var(--fc-future-day-text);
+  }
+
+  /* DayGrid */
+  .fc-daygrid-day {
+    background-color: var(--fc-daygrid-day-bg);
+    border: 1px solid var(--fc-day-border);
+  }
+}
+
+/* Default 'More' Link Style */
+.fc-daygrid-more-link,
+.fc-more-link {
+  background-color: var(--fc-more-link-bg);
+  color: var(--fc-more-link-text);
+  border-radius: 4px;
+  padding: 0.2rem 0.4rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Hover Effect */
+.fc-daygrid-more-link:hover,
+.fc-more-link:hover {
+  background-color: var(--fc-more-link-hover-bg);
+  color: var(--fc-more-link-hover-text);
+  text-decoration: underline;
+}

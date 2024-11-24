@@ -78,8 +78,8 @@ export const calender = router({
         id: z.number(),
         name: z.string().min(1).optional(),
         location: z.string().min(1).optional(),
-        fromDate: z.date().optional(),
-        toDate: z.date().optional(),
+        fromDate: z.string().optional(),
+        toDate: z.string().optional(),
         description: z.string().optional(),
         tags: z.string().optional(),
         category: z.string().optional(),
@@ -94,8 +94,8 @@ export const calender = router({
           id: number;
           name?: string;
           location?: string;
-          fromDate?: Date;
-          toDate?: Date;
+          fromDate?: string;
+          toDate?: string;
           description?: string;
           tags?: string;
           category?: string;
@@ -108,8 +108,8 @@ export const calender = router({
             data: {
               ...(input.name && { name: input.name }),
               ...(input.location && { location: input.location }),
-              ...(input.fromDate && { fromDate: input.fromDate }),
-              ...(input.toDate && { toDate: input.toDate }),
+              ...(input.fromDate && { fromDate: new Date(input.fromDate) }),
+              ...(input.toDate && { toDate: new Date(input.toDate) }),
               ...(input.description && { description: input.description }),
               ...(input.tags && { tags: input.tags }),
               ...(input.category && { category: input.category }),

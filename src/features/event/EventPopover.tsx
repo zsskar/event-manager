@@ -1,8 +1,8 @@
-import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
-export const EventWithPopover = ({ event }) => {
+export const EventWithPopover = ({ event, isDarkMode }) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 
@@ -33,31 +33,54 @@ export const EventWithPopover = ({ event }) => {
       onMouseLeave={handleMouseLeave}
       className="relative cursor-pointer"
     >
-      <span className="text-bold  text-white rounded hover:bg-blue-600 transition duration-200">
+      <span
+        className={cn(
+          "text-bold rounded hover:bg-blue-600 transition duration-200",
+          isDarkMode ? "text-gray-200" : "text-gray-900"
+        )}
+      >
         {event.title}
       </span>
-      {isPopoverOpen && (
-        <Popover open={isPopoverOpen}>
-          <PopoverContent
+      {isPopoverOpen &&
+        createPortal(
+          <div
             style={{
-              position: "absolute",
+              position: "fixed",
               top: popoverPosition.top,
               left: popoverPosition.left,
               transform: "translate(-50%, -100%)",
-              zIndex: 999,
+              zIndex: 9999, // Ensure this is very high
             }}
             className={cn(
-              "w-64 bg-white shadow-lg rounded-md p-4 transition-all duration-300 transform",
-              isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95"
+              "w-64 shadow-lg rounded-md p-4 transition-all duration-300 transform",
+              isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95",
+              isDarkMode
+                ? "bg-gray-800 text-gray-100"
+                : "bg-white text-gray-800"
             )}
           >
-            <h3 className="font-bold text-lg text-gray-800 mb-2">
+            <h3
+              className={cn(
+                "font-bold text-lg mb-2",
+                isDarkMode ? "text-gray-100" : "text-gray-800"
+              )}
+            >
               {event.title}
             </h3>
-            <p className="text-sm text-gray-600">
+            <p
+              className={cn(
+                "text-sm",
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              )}
+            >
               <strong>Start:</strong> {formatDate(event.start)}
             </p>
-            <p className="text-sm text-gray-600">
+            <p
+              className={cn(
+                "text-sm",
+                isDarkMode ? "text-gray-300" : "text-gray-600"
+              )}
+            >
               <strong>End:</strong>{" "}
               {formatDate(
                 new Date(
@@ -66,12 +89,15 @@ export const EventWithPopover = ({ event }) => {
               )}
             </p>
             <div
-              className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-white rotate-45 shadow"
+              className={cn(
+                "absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 shadow",
+                isDarkMode ? "bg-gray-800" : "bg-white"
+              )}
               style={{ zIndex: -1 }}
             ></div>
-          </PopoverContent>
-        </Popover>
-      )}
+          </div>,
+          document.body // Render popover at the root level
+        )}
     </div>
   );
 };

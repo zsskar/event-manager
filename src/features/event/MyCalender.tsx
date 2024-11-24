@@ -313,7 +313,7 @@ const MyCalendar: React.FC = () => {
             headerToolbar={{
               left: "prev,next today",
               center: "title",
-              right: "dayGridMonth",
+              right: "dayGridMonth,dayGridWeek",
             }}
             dayMaxEventRows={2}
             events={availableEvents} // Events data
@@ -347,7 +347,12 @@ const MyCalendar: React.FC = () => {
               }
             }}
             eventContent={(eventInfo) => {
-              return <EventWithPopover event={eventInfo.event} />;
+              return (
+                <EventWithPopover
+                  event={eventInfo.event}
+                  isDarkMode={isDarkMode}
+                />
+              );
             }}
             height="100%" // Full height of the container
             themeSystem="standard" // Theme configuration (dark/light mode)
@@ -356,12 +361,11 @@ const MyCalendar: React.FC = () => {
               date < normalizedToday ? "bg-gray-200 text-gray-400" : ""
             }
             viewClassNames="shadow-md rounded-md overflow-auto"
-            customButtons={{
-              customToday: {
-                text: "Today",
-                click: () => console.log("Today button clicked"),
-              },
-            }}
+            eventClassNames={({ event }) =>
+              theme === "dark"
+                ? "bg-blue-400 text-white"
+                : "bg-blue-500 text-black"
+            }
           />
         </div>
       </div>
