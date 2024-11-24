@@ -26,19 +26,29 @@ import { toast } from "sonner";
 import { useSession } from "@clerk/clerk-react";
 import { eventState } from "@/store/atoms/event";
 import { Event } from "@/App";
-import { Popover, PopoverContent } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
 import { ViewEventDetails } from "./ViewEventDetailsSheet";
 import { EventWithPopover } from "./EventPopover";
+import FullCalendar from "@fullcalendar/react"; // React wrapper for FullCalendar
+import dayGridPlugin from "@fullcalendar/daygrid"; // For month, week, and day views
+import timeGridPlugin from "@fullcalendar/timegrid"; // For time grid view
+import interactionPlugin from "@fullcalendar/interaction";
+import { DateSelectArg } from "@fullcalendar/core/index.js";
 
 const localizer = momentLocalizer(moment);
 
+const eventsDummData = [
+  {
+    start: "2024-11-24",
+    end: "2024-11-25",
+    title: "Dummy Event",
+  },
+];
+
 interface EventTypeCalender {
-  id: number;
+  id: string;
   title: string;
-  start: Date;
-  end: Date;
-  allDay?: boolean;
+  start: string;
+  end: string;
 }
 
 type EventType = {
@@ -61,6 +71,7 @@ const MyCalendar: React.FC = () => {
     today.getDate()
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [fromDate, setFromDate] = useState<Date>();
   const [toDate, setToDate] = useState<Date>();
   const categories = useRecoilValue(categoryState);
   const tags = useRecoilValue(tagsState);
@@ -85,16 +96,17 @@ const MyCalendar: React.FC = () => {
 
   const transformEvents = (eventData: Event[]): EventTypeCalender[] =>
     eventData.map((event) => ({
-      id: event.id,
+      id: event.id.toString(),
       title: event.name,
-      start: new Date(event.fromDate),
-      end: new Date(event.toDate),
-      allDay: false,
+      start: new Date(event.fromDate).toISOString().split("T")[0],
+      end: new Date(event.toDate).toISOString().split("T")[0],
     }));
 
   useEffect(() => {
     if (!isLoading && eventsData) {
       // Transform events and set states
+      console.log("EVents: ", eventsData.events);
+
       const transformed = transformEvents(eventsData.events);
       setEvents(eventsData.events); // Keep the raw data for backend consistency
       setAvailableEvents(transformed); // Store transformed events for the calendar
@@ -153,21 +165,28 @@ const MyCalendar: React.FC = () => {
   //   },
   // ]);
 
-  const handleDateClick = (slotInfo: SlotInfo) => {
+  const getDateOnly = (date: Date) => {
+    return new Date(date.setDate(date.getDate() + 1))
+      .toISOString()
+      .split("T")[0];
+  };
+
+  const handleDateClick = (slotInfo: DateSelectArg) => {
     const { start, end } = slotInfo;
 
     const endDate = new Date(end.getTime() - 24 * 60 * 60 * 1000);
-
+    const startDate = new Date(start);
     const clickedDate = start;
     if (clickedDate < today) {
       return;
     }
     setEventData((prev) => ({
       ...prev,
-      fromDate: slotInfo.start.toString(),
-      toDate: endDate.toString(),
+      fromDate: getDateOnly(startDate),
+      toDate: getDateOnly(end),
     }));
 
+    setFromDate(start);
     setToDate(endDate);
     setIsModalOpen(true);
   };
@@ -188,18 +207,8 @@ const MyCalendar: React.FC = () => {
     const updatedData = {
       ...eventData,
       tags: eventData.tags.join(","),
-      toDate:
-        new Date(eventData.fromDate).getDate() !=
-        new Date(eventData.toDate).getDate()
-          ? new Date(
-              new Date(eventData.toDate).setDate(
-                new Date(eventData.toDate).getDate() + 1
-              )
-            ).toString()
-          : new Date(eventData.toDate).toString(),
       createdBy: session?.user.id as string,
     };
-    // console.log("Event Created:", updatedData);
     createEvent(updatedData);
   };
 
@@ -247,7 +256,7 @@ const MyCalendar: React.FC = () => {
             isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
           }`}
         >
-          <Calendar
+          {/* <Calendar
             tooltipAccessor={null} // Disable default tooltips
             components={{
               event: EventWithPopover, // Custom event rendering
@@ -263,7 +272,7 @@ const MyCalendar: React.FC = () => {
               backgroundColor: isDarkMode ? "#333" : "#fff",
               color: isDarkMode ? "#fff" : "#000",
             }}
-            views={["month", "agenda"]}
+            views={["month"]}
             popup={true}
             selectable
             onSelectSlot={handleDateClick}
@@ -297,6 +306,62 @@ const MyCalendar: React.FC = () => {
             }}
             // onDoubleClickEvent={handleDoubleClickEvent}
             className="shadow-md rounded-md overflow-auto" // Ensure scrollable area
+          /> */}
+          <FullCalendar
+            plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
+            initialView="dayGridMonth" // Default view
+            headerToolbar={{
+              left: "prev,next today",
+              center: "title",
+              right: "dayGridMonth",
+            }}
+            dayMaxEventRows={2}
+            events={availableEvents} // Events data
+            selectable={true} // Allow date selection
+            editable={false} // Disable drag-and-drop
+            eventClick={(info) => {
+              const selectedEvent = events.find(
+                (event) => event.id.toString() === info.event.id
+              );
+
+              setSelectedEvent(selectedEvent);
+              setOpenSheet(!openSheet); // Open your custom sheet
+            }}
+            select={(info) => {
+              handleDateClick(info);
+            }}
+            dayCellDidMount={(info) => {
+              const cellDate = new Date(info.date);
+              const normalizedDate = new Date(
+                cellDate.getFullYear(),
+                cellDate.getMonth(),
+                cellDate.getDate()
+              );
+
+              if (normalizedDate < normalizedToday) {
+                info.el.style.backgroundColor = "#9999"; // Light gray for past dates
+                info.el.style.color = "#999"; // Muted text color
+                info.el.style.pointerEvents = "none"; // Disable interactions
+              } else {
+                info.el.style.pointerEvents = "cursor";
+              }
+            }}
+            eventContent={(eventInfo) => {
+              return <EventWithPopover event={eventInfo.event} />;
+            }}
+            height="100%" // Full height of the container
+            themeSystem="standard" // Theme configuration (dark/light mode)
+            dayHeaderClassNames="font-bold text-lg" // Custom day header styles
+            dayCellClassNames={({ date }) =>
+              date < normalizedToday ? "bg-gray-200 text-gray-400" : ""
+            }
+            viewClassNames="shadow-md rounded-md overflow-auto"
+            customButtons={{
+              customToday: {
+                text: "Today",
+                click: () => console.log("Today button clicked"),
+              },
+            }}
           />
         </div>
       </div>
@@ -362,11 +427,13 @@ const MyCalendar: React.FC = () => {
                 <Label htmlFor="fromDate" className="text-right">
                   From Date
                 </Label>
-                <DatePicker
-                  date={new Date(eventData.fromDate)}
-                  placeholder="From Date"
-                  setToDate={setToDate}
-                />
+                {fromDate && (
+                  <DatePicker
+                    date={fromDate}
+                    placeholder="From Date"
+                    setToDate={setToDate}
+                  />
+                )}
               </div>
 
               {/* To Date */}
@@ -375,7 +442,7 @@ const MyCalendar: React.FC = () => {
                   To Date
                 </Label>
                 <DatePicker
-                  startDate={new Date(eventData.fromDate)}
+                  startDate={fromDate}
                   date={toDate || new Date(eventData.toDate)}
                   placeholder="To Date"
                   setToDate={setToDate}
@@ -551,7 +618,6 @@ const MyCalendar: React.FC = () => {
           selectedEvent={selectedEvent}
         />
       )}
-      ;
     </ContentLayout>
   );
 };

@@ -33,7 +33,7 @@ export const EventWithPopover = ({ event }) => {
       onMouseLeave={handleMouseLeave}
       className="relative cursor-pointer"
     >
-      <span className="px-10 py-10 text-bold  text-white rounded hover:bg-blue-600 transition duration-200">
+      <span className="text-bold  text-white rounded hover:bg-blue-600 transition duration-200">
         {event.title}
       </span>
       {isPopoverOpen && (
@@ -44,7 +44,7 @@ export const EventWithPopover = ({ event }) => {
               top: popoverPosition.top,
               left: popoverPosition.left,
               transform: "translate(-50%, -100%)",
-              zIndex: 10,
+              zIndex: 999,
             }}
             className={cn(
               "w-64 bg-white shadow-lg rounded-md p-4 transition-all duration-300 transform",
