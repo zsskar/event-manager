@@ -9,6 +9,12 @@ import {
 } from "@/components/ui/sheet";
 import { ArrowRight, Calendar, Clock, Info, MapPin, Tag } from "lucide-react";
 import { Dispatch, SetStateAction } from "react";
+import DeleteEventButton from "./DeleteEventButton";
+import { EventTypeCalender } from "./MyCalender";
+import { useRecoilState } from "recoil";
+import { eventState } from "@/store/atoms/event";
+import { trpc } from "@/utils/trpc";
+import { toast } from "sonner";
 
 const formatDate = (date: string) => {
   return new Intl.DateTimeFormat("en-GB", {
@@ -22,11 +28,44 @@ export function ViewEventDetails({
   openSheet,
   setOpenSheet,
   selectedEvent,
+  setAvailableEvents,
 }: {
   openSheet: boolean;
   setOpenSheet: Dispatch<SetStateAction<boolean>>;
   selectedEvent: Event;
+  setAvailableEvents: Dispatch<React.SetStateAction<EventTypeCalender[]>>;
 }) {
+  const [events, setEvents] = useRecoilState(eventState);
+  const deleteMutation = trpc.calender.deleteEventById.useMutation();
+
+  const filterEvents = (eventId: number) => {
+    const filterEvents1 = events.filter((event) => event.id !== eventId);
+    setEvents(filterEvents1);
+    setAvailableEvents((prev) =>
+      prev.filter((event) => event.id !== eventId.toString())
+    );
+  };
+
+  const deleteEvent = (eventId: number) => {
+    console.log("Will delete event in some time :" + eventId);
+    deleteMutation.mutate(
+      { id: eventId },
+      {
+        onSuccess: () => {
+          filterEvents(eventId);
+          setOpenSheet(!openSheet);
+          toast.success("Event deleted successfully.", {
+            position: "top-right",
+          });
+        },
+        onError: () => {
+          toast.success("Error while deleting event.", {
+            position: "top-right",
+          });
+        },
+      }
+    );
+  };
   return (
     <Sheet open={openSheet} onOpenChange={setOpenSheet}>
       <SheetContent className="p-5 shadow-2xl bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-800 dark:to-gray-900">
@@ -79,7 +118,13 @@ export function ViewEventDetails({
                 </span>
                 <ArrowRight className="w-5 h-5 mx-2 text-gray-500 dark:text-gray-400" />
                 <span className="text-lg font-semibold">
-                  {formatDate(selectedEvent?.toDate) || "N/A"}
+                  {formatDate(
+                    new Date(
+                      new Date(selectedEvent.toDate).setDate(
+                        new Date(selectedEvent.toDate).getDate() - 1
+                      )
+                    ).toString()
+                  ) || "N/A"}
                 </span>
               </div>
             </div>
@@ -149,6 +194,10 @@ export function ViewEventDetails({
               </div>
             </div>
           </div>
+          <DeleteEventButton
+            deleteEvent={deleteEvent}
+            eventId={selectedEvent.id}
+          />
         </div>
       </SheetContent>
     </Sheet>

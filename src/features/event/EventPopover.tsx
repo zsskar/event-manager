@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { Clock, MapPinIcon } from "lucide-react";
 import { useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -35,12 +36,15 @@ export const EventWithPopover = ({ event, isDarkMode }) => {
     >
       <span
         className={cn(
-          "text-bold rounded hover:bg-blue-600 transition duration-200",
-          isDarkMode ? "text-gray-200" : "text-gray-900"
+          "font-semibold rounded py-1 px-2 transition duration-200",
+          isDarkMode
+            ? "text-gray-200 hover:text-blue-400"
+            : "text-gray-900 hover:text-blue-600"
         )}
       >
-        {event.title}
+        {event?.name}
       </span>
+
       {isPopoverOpen &&
         createPortal(
           <div
@@ -49,54 +53,63 @@ export const EventWithPopover = ({ event, isDarkMode }) => {
               top: popoverPosition.top,
               left: popoverPosition.left,
               transform: "translate(-50%, -100%)",
-              zIndex: 9999, // Ensure this is very high
+              zIndex: 9999,
             }}
             className={cn(
-              "w-64 shadow-lg rounded-md p-4 transition-all duration-300 transform",
+              "w-80 shadow-2xl rounded-2xl p-6 transition-all duration-300 transform",
               isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95",
               isDarkMode
-                ? "bg-gray-800 text-gray-100"
-                : "bg-white text-gray-800"
+                ? "bg-gradient-to-b from-gray-900 to-gray-800 text-gray-100"
+                : "bg-gradient-to-b from-white to-gray-100 text-gray-800"
             )}
           >
             <h3
               className={cn(
-                "font-bold text-lg mb-2",
-                isDarkMode ? "text-gray-100" : "text-gray-800"
+                "font-bold text-2xl mb-4",
+                isDarkMode ? "text-blue-300" : "text-blue-700"
               )}
             >
-              {event.title}
+              {event?.name}
             </h3>
-            <p
-              className={cn(
-                "text-sm",
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              )}
-            >
-              <strong>Start:</strong> {formatDate(event.start)}
+
+            {/* Start Time */}
+            <p className="text-base flex items-center mb-3">
+              <Clock className="w-5 h-5 mr-2 text-blue-400" />
+              <strong>Start:</strong> {formatDate(event?.fromDate)}
             </p>
-            <p
-              className={cn(
-                "text-sm",
-                isDarkMode ? "text-gray-300" : "text-gray-600"
-              )}
-            >
-              <strong>End:</strong>{" "}
+
+            {/* End Time */}
+            <p className="text-base flex items-center mb-3">
+              <Clock className="w-5 h-5 mr-2 text-red-400" />
+              <strong>End:</strong>
               {formatDate(
                 new Date(
-                  new Date(event.end).setDate(new Date(event.end).getDate() - 1)
+                  new Date(event?.toDate).setDate(
+                    new Date(event?.toDate).getDate() - 1
+                  )
                 ).toString()
               )}
             </p>
+
+            {/* Location */}
+            {event.location && (
+              <p className="text-base flex items-center">
+                <MapPinIcon className="w-5 h-5 mr-2 text-green-400" />
+                <strong>Location:</strong> {event?.location}
+              </p>
+            )}
+
             <div
               className={cn(
-                "absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-4 h-4 rotate-45 shadow",
-                isDarkMode ? "bg-gray-800" : "bg-white"
+                "absolute bottom-[-10px] left-1/2 transform -translate-x-1/2 w-5 h-5 rotate-45",
+                isDarkMode
+                  ? "bg-gradient-to-b from-gray-900 to-gray-800"
+                  : "bg-gradient-to-b from-white to-gray-100"
               )}
-              style={{ zIndex: -1 }}
+              style={{ zIndex: -2 }}
             ></div>
           </div>,
-          document.body // Render popover at the root level
+          document.body
         )}
     </div>
   );

@@ -34,24 +34,15 @@ import timeGridPlugin from "@fullcalendar/timegrid"; // For time grid view
 import interactionPlugin from "@fullcalendar/interaction";
 import { DateSelectArg } from "@fullcalendar/core/index.js";
 
-const localizer = momentLocalizer(moment);
-
-const eventsDummData = [
-  {
-    start: "2024-11-24",
-    end: "2024-11-25",
-    title: "Dummy Event",
-  },
-];
-
-interface EventTypeCalender {
+export interface EventTypeCalender {
   id: string;
   title: string;
   start: string;
   end: string;
+  location: string;
 }
 
-type EventType = {
+export type EventType = {
   name: string;
   location: string;
   fromDate: string;
@@ -100,6 +91,7 @@ const MyCalendar: React.FC = () => {
       title: event.name,
       start: new Date(event.fromDate).toISOString().split("T")[0],
       end: new Date(event.toDate).toISOString().split("T")[0],
+      location: event.location || "",
     }));
 
   useEffect(() => {
@@ -147,8 +139,6 @@ const MyCalendar: React.FC = () => {
   });
 
   const isDarkMode = theme === "dark";
-
-  // const [events] = useState<Event[]>([
   //   {
   //     id: 1,
   //     title: "Sample Event",
@@ -248,6 +238,10 @@ const MyCalendar: React.FC = () => {
     eventData.tags.length == 0 ||
     eventData.category.length == 0;
 
+  const getSelectedEvent = (eventId: string) => {
+    return events.find((event) => event.id.toString() === eventId);
+  };
+
   return (
     <ContentLayout title="My Calendar">
       <div className="flex justify-center p-4">
@@ -256,57 +250,6 @@ const MyCalendar: React.FC = () => {
             isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
           }`}
         >
-          {/* <Calendar
-            tooltipAccessor={null} // Disable default tooltips
-            components={{
-              event: EventWithPopover, // Custom event rendering
-            }}
-            localizer={localizer}
-            startAccessor="start"
-            endAccessor="end"
-            events={availableEvents}
-            defaultView="month"
-            style={{
-              height: "100%",
-              padding: "2rem",
-              backgroundColor: isDarkMode ? "#333" : "#fff",
-              color: isDarkMode ? "#fff" : "#000",
-            }}
-            views={["month"]}
-            popup={true}
-            selectable
-            onSelectSlot={handleDateClick}
-            dayPropGetter={(date) => {
-              const normalizedDate = new Date(
-                date.getFullYear(),
-                date.getMonth(),
-                date.getDate()
-              );
-
-              if (normalizedDate < normalizedToday) {
-                return {
-                  style: {
-                    height: "100%", // Full height of the parent container
-                    padding: "2rem",
-                    backgroundColor: "#9999", // Light gray for past dates
-                    color: "#999", // Muted text color
-                    pointerEvents: "none", // Disable interactions
-                  },
-                };
-              }
-              return {};
-            }}
-            onSelectEvent={(theSelectedEvent) => {
-              console.log("Select event :", theSelectedEvent);
-              const selectedEvent = events.find(
-                (event) => event.id === theSelectedEvent.id
-              );
-              setSelectedEvent(selectedEvent);
-              setOpenSheet(!openSheet);
-            }}
-            // onDoubleClickEvent={handleDoubleClickEvent}
-            className="shadow-md rounded-md overflow-auto" // Ensure scrollable area
-          /> */}
           <FullCalendar
             plugins={[dayGridPlugin, interactionPlugin, timeGridPlugin]}
             initialView="dayGridMonth" // Default view
@@ -320,11 +263,8 @@ const MyCalendar: React.FC = () => {
             selectable={true} // Allow date selection
             editable={false} // Disable drag-and-drop
             eventClick={(info) => {
-              const selectedEvent = events.find(
-                (event) => event.id.toString() === info.event.id
-              );
-
-              setSelectedEvent(selectedEvent);
+              const event = getSelectedEvent(info.event.id);
+              setSelectedEvent(event);
               setOpenSheet(!openSheet); // Open your custom sheet
             }}
             select={(info) => {
@@ -347,9 +287,10 @@ const MyCalendar: React.FC = () => {
               }
             }}
             eventContent={(eventInfo) => {
+              const selectedEvent = getSelectedEvent(eventInfo.event.id);
               return (
                 <EventWithPopover
-                  event={eventInfo.event}
+                  event={selectedEvent}
                   isDarkMode={isDarkMode}
                 />
               );
@@ -361,11 +302,6 @@ const MyCalendar: React.FC = () => {
               date < normalizedToday ? "bg-gray-200 text-gray-400" : ""
             }
             viewClassNames="shadow-md rounded-md overflow-auto"
-            eventClassNames={({ event }) =>
-              theme === "dark"
-                ? "bg-blue-400 text-white"
-                : "bg-blue-500 text-black"
-            }
           />
         </div>
       </div>
@@ -620,6 +556,7 @@ const MyCalendar: React.FC = () => {
           openSheet={openSheet}
           setOpenSheet={setOpenSheet}
           selectedEvent={selectedEvent}
+          setAvailableEvents={setAvailableEvents}
         />
       )}
     </ContentLayout>
