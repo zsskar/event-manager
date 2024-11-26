@@ -381,3 +381,13 @@
   color: var(--fc-more-link-hover-text);
   text-decoration: underline;
 }
+
+.fc-event {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}
+
+.fc-daygrid-day {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+}

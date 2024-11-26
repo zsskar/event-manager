@@ -15,7 +15,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Select from "react-select";
+import Select, { components } from "react-select";
 import { DatePicker } from "./DatePicker";
 import { Textarea } from "@/components/ui/textarea";
 import { useRecoilState, useRecoilValue } from "recoil";
@@ -33,6 +33,8 @@ import dayGridPlugin from "@fullcalendar/daygrid"; // For month, week, and day v
 import timeGridPlugin from "@fullcalendar/timegrid"; // For time grid view
 import interactionPlugin from "@fullcalendar/interaction";
 import { DateSelectArg } from "@fullcalendar/core/index.js";
+import { Info, MapPin, Tag, Tags } from "lucide-react";
+import EventUpdateInfo from "./EventUpdateInfo";
 
 export interface EventTypeCalender {
   id: string;
@@ -166,7 +168,11 @@ const MyCalendar: React.FC = () => {
 
     const endDate = new Date(end.getTime() - 24 * 60 * 60 * 1000);
     const startDate = new Date(start);
-    const clickedDate = start;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Ensure today is normalized to midnight
+
+    const clickedDate = new Date(start);
+    clickedDate.setHours(0, 0, 0, 0); // Normalize clickedDate to midnight
     if (clickedDate < today) {
       return;
     }
@@ -236,7 +242,7 @@ const MyCalendar: React.FC = () => {
     eventData.category.length == 0 ||
     eventData.name.length == 0 ||
     eventData.tags.length == 0 ||
-    eventData.category.length == 0;
+    eventData.location.length == 0;
 
   const getSelectedEvent = (eventId: string) => {
     return events.find((event) => event.id.toString() === eventId);
@@ -268,22 +274,30 @@ const MyCalendar: React.FC = () => {
               setOpenSheet(!openSheet); // Open your custom sheet
             }}
             select={(info) => {
+              console.log("Select :" + info);
+
               handleDateClick(info);
             }}
             dayCellDidMount={(info) => {
-              const cellDate = new Date(info.date);
+              const cellDate = new Date(info.date); // Date of the calendar cell
               const normalizedDate = new Date(
                 cellDate.getFullYear(),
                 cellDate.getMonth(),
                 cellDate.getDate()
               );
 
+              const normalizedToday = new Date(); // Today's date normalized
+              normalizedToday.setHours(0, 0, 0, 0); // Remove time component
+
               if (normalizedDate < normalizedToday) {
-                info.el.style.backgroundColor = "#9999"; // Light gray for past dates
-                info.el.style.color = "#999"; // Muted text color
+                // Past dates
+                info.el.style.backgroundColor = "#9999"; // Light gray
+                info.el.style.color = "#999"; // Muted text
                 info.el.style.pointerEvents = "none"; // Disable interactions
               } else {
-                info.el.style.pointerEvents = "cursor";
+                // Future and current dates
+                info.el.style.pointerEvents = "auto"; // Ensure clickable
+                info.el.style.cursor = "pointer"; // Indicate interactivity
               }
             }}
             eventContent={(eventInfo) => {
@@ -305,6 +319,8 @@ const MyCalendar: React.FC = () => {
           />
         </div>
       </div>
+      <EventUpdateInfo />
+
       {isModalOpen && (
         <Dialog
           open={isModalOpen}
@@ -313,7 +329,7 @@ const MyCalendar: React.FC = () => {
             setIsModalOpen((prev) => !prev);
           }}
         >
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] p-6">
             <DialogHeader>
               <DialogTitle>Create Event</DialogTitle>
               <DialogDescription>
@@ -321,50 +337,63 @@ const MyCalendar: React.FC = () => {
                 your selected date and "To Date" is optional.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              {/* Event Name */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">
+            <div className="grid gap-6 sm:grid-cols-2 sm:gap-4 py-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="name" className="text-sm font-medium">
                   Event Name
                 </Label>
-                <Input
-                  required={true}
-                  id="name"
-                  name="name"
-                  value={eventData.name}
-                  onChange={handleInputChange}
-                  className={`col-span-3 ${
-                    isDarkMode
-                      ? "border-gray-700 bg-gray-800 text-white"
-                      : "border-input bg-background text-black"
-                  }`}
-                  placeholder="Event Name"
-                />
+                <div className="relative">
+                  <Info
+                    className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${
+                      isDarkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  />
+                  <Input
+                    required
+                    id="name"
+                    name="name"
+                    value={eventData.name}
+                    onChange={handleInputChange}
+                    className={`pl-10 ${
+                      isDarkMode
+                        ? "border-gray-700 bg-gray-800 text-white"
+                        : "border-input bg-background text-black"
+                    }`}
+                    placeholder="Event Name"
+                  />
+                </div>
               </div>
 
               {/* Location */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="location" className="text-right">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="location" className="text-sm font-medium">
                   Location
                 </Label>
-                <Input
-                  required={true}
-                  id="location"
-                  name="location"
-                  value={eventData.location}
-                  onChange={handleInputChange} // Add this
-                  className={`col-span-3 ${
-                    isDarkMode
-                      ? "border-gray-700 bg-gray-800 text-white"
-                      : "border-input bg-background text-black"
-                  }`}
-                  placeholder="Location"
-                />
+                <div className="relative">
+                  <MapPin
+                    className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${
+                      isDarkMode ? "text-gray-400" : "text-gray-500"
+                    }`}
+                  />
+                  <Input
+                    required
+                    id="location"
+                    name="location"
+                    value={eventData.location}
+                    onChange={handleInputChange}
+                    className={`pl-10  ${
+                      isDarkMode
+                        ? "border-gray-700 bg-gray-800 text-white"
+                        : "border-input bg-background text-black"
+                    }`}
+                    placeholder="Location"
+                  />
+                </div>
               </div>
 
               {/* From Date */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="fromDate" className="text-right">
+              <div className="flex flex-col gap-2 sm:col-span-1">
+                <Label htmlFor="fromDate" className="text-sm font-medium">
                   From Date
                 </Label>
                 {fromDate && (
@@ -377,8 +406,8 @@ const MyCalendar: React.FC = () => {
               </div>
 
               {/* To Date */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="toDate" className="text-right">
+              <div className="flex flex-col gap-2 sm:col-span-1">
+                <Label htmlFor="toDate" className="text-sm font-medium">
                   To Date
                 </Label>
                 <DatePicker
@@ -389,138 +418,127 @@ const MyCalendar: React.FC = () => {
                 />
               </div>
 
-              {/* Tags (Multi-select Dropdown) */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="tags" className="text-right">
+              {/* Tags */}
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <Label htmlFor="tags" className="text-sm font-medium">
                   Tags
                 </Label>
-                <div
-                  className={`col-span-3 border ${
-                    isDarkMode
-                      ? "border-gray-700 bg-gray-800 text-white"
-                      : "border-input bg-background text-black"
-                  } ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm`}
-                >
-                  <Select
-                    required={true}
-                    isMulti
-                    formatOptionLabel={(e) => (
-                      <div style={{ display: "flex", alignItems: "center" }}>
-                        <div
-                          style={{
-                            width: "10px",
-                            height: "10px",
-                            backgroundColor: e.color,
-                            marginRight: "8px",
-                            borderRadius: "50%",
-                          }}
-                        ></div>
-                        {e.label}
-                      </div>
-                    )}
-                    closeMenuOnSelect={false}
-                    options={availableTags}
-                    onChange={(selected) =>
-                      setEventData((prev) => ({
-                        ...prev,
-                        tags: selected.map((tag) => tag.value),
-                      }))
-                    }
-                    classNamePrefix="custom-select"
-                    className={`w-full ${
-                      isDarkMode
-                        ? "custom-select-dark" // Custom styles for dark theme
-                        : "custom-select-light" // Custom styles for light theme
-                    }`}
-                    styles={{
-                      control: (baseStyles) => ({
-                        ...baseStyles,
-                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
-                        color: isDarkMode ? "#FFFFFF" : "#000000",
-                      }),
-                      menu: (baseStyles) => ({
-                        ...baseStyles,
-                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                      }),
-                      option: (baseStyles, state) => ({
-                        ...baseStyles,
-                        backgroundColor: state.isFocused
-                          ? isDarkMode
-                            ? "#4A5568"
-                            : "#E2E8F0"
-                          : isDarkMode
-                          ? "#2D3748"
-                          : "#FFFFFF",
-                        color: isDarkMode ? "#FFFFFF" : "#000000",
-                      }),
-                    }}
-                  />
-                </div>
+                <Select
+                  required
+                  isMulti
+                  formatOptionLabel={(e) => (
+                    <div className="flex items-center">
+                      <div
+                        style={{
+                          width: "10px",
+                          height: "10px",
+                          backgroundColor: e.color,
+                          marginRight: "8px",
+                          borderRadius: "50%",
+                        }}
+                      ></div>
+                      {e.label}
+                    </div>
+                  )}
+                  closeMenuOnSelect={false}
+                  options={availableTags}
+                  onChange={(selected) =>
+                    setEventData((prev) => ({
+                      ...prev,
+                      tags: selected.map((tag) => tag.value),
+                    }))
+                  }
+                  components={{
+                    DropdownIndicator: (props) => (
+                      <components.DropdownIndicator {...props}>
+                        <Tags className="text-gray-500" />
+                      </components.DropdownIndicator>
+                    ),
+                    MultiValueContainer: (props) => (
+                      <components.MultiValueContainer {...props}>
+                        <Tag className="mr-1 w-5 h-5 mt-1 ml-1 text-gray-400" />
+                        {props.children}
+                      </components.MultiValueContainer>
+                    ),
+                  }}
+                  classNamePrefix="custom-select"
+                  className={`w-full ${
+                    isDarkMode ? "custom-select-dark" : "custom-select-light"
+                  }`}
+                  styles={{
+                    control: (baseStyles) => ({
+                      ...baseStyles,
+                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                      color: isDarkMode ? "#FFFFFF" : "#000000",
+                    }),
+                    valueContainer: (baseStyles) => ({
+                      ...baseStyles,
+                    }),
+                    menu: (baseStyles) => ({
+                      ...baseStyles,
+                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                    }),
+                  }}
+                />
               </div>
 
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="category" className="text-right">
+              {/* Category */}
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <Label htmlFor="category" className="text-sm font-medium">
                   Category
                 </Label>
-                <div
-                  className={`col-span-3 border ${
-                    isDarkMode
-                      ? "border-gray-700 bg-gray-800 text-white"
-                      : "border-input bg-background text-black"
-                  } ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 md:text-sm`}
-                >
-                  <Select
-                    required={true}
-                    options={availableCategories}
-                    onChange={(selected) =>
-                      setEventData((prev) => ({
-                        ...prev,
-                        category: selected?.value || "",
-                      }))
-                    }
-                    classNamePrefix="custom-select"
-                    className={`w-full ${
-                      isDarkMode ? "custom-select-dark" : "custom-select-light"
-                    }`}
-                    styles={{
-                      control: (baseStyles) => ({
-                        ...baseStyles,
-                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
-                        color: isDarkMode ? "#FFFFFF" : "#000000",
-                      }),
-                      menu: (baseStyles) => ({
-                        ...baseStyles,
-                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                      }),
-                      option: (baseStyles, state) => ({
-                        ...baseStyles,
-                        backgroundColor: state.isFocused
-                          ? isDarkMode
-                            ? "#4A5568"
-                            : "#E2E8F0"
-                          : isDarkMode
-                          ? "#2D3748"
-                          : "#FFFFFF",
-                        color: isDarkMode ? "#FFFFFF" : "#000000",
-                      }),
-                      singleValue: (baseStyles) => ({
-                        ...baseStyles,
-                        color: isDarkMode ? "#FFFFFF" : "#000000", // Ensures selected value text color respects theme
-                      }),
-                      placeholder: (baseStyles) => ({
-                        ...baseStyles,
-                        color: isDarkMode ? "#A0AEC0" : "#718096", // Matches muted text color for each theme
-                      }),
-                    }}
-                  />
-                </div>
+                <Select
+                  required
+                  options={availableCategories}
+                  onChange={(selected) =>
+                    setEventData((prev) => ({
+                      ...prev,
+                      category: selected?.value || "",
+                    }))
+                  }
+                  components={{
+                    DropdownIndicator: (props) => (
+                      <components.DropdownIndicator {...props}>
+                        <Info className="text-gray-500" />
+                      </components.DropdownIndicator>
+                    ),
+                    SingleValue: ({ data, ...props }) => (
+                      <components.SingleValue {...props}>
+                        <div className="flex items-center">
+                          <Info className="mr-1 w-5 h-5 text-gray-400" />
+                          {data.label}
+                        </div>
+                      </components.SingleValue>
+                    ),
+                  }}
+                  classNamePrefix="custom-select"
+                  className={`w-full}`}
+                  styles={{
+                    control: (baseStyles) => ({
+                      ...baseStyles,
+                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                      color: isDarkMode ? "#FFFFFF" : "#000000",
+                    }),
+                    valueContainer: (baseStyles) => ({
+                      ...baseStyles,
+                    }),
+                    menu: (baseStyles) => ({
+                      ...baseStyles,
+                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                    }),
+                    singleValue: (baseStyles) => ({
+                      ...baseStyles,
+                      color: isDarkMode ? "#FFFFFF" : "#000000", // Explicit text color for the selected value
+                    }),
+                  }}
+                />
               </div>
 
               {/* Description */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="description" className="text-right">
+              <div className="flex flex-col gap-2 sm:col-span-2">
+                <Label htmlFor="description" className="text-sm font-medium">
                   Description
                 </Label>
                 <Textarea
@@ -533,7 +551,7 @@ const MyCalendar: React.FC = () => {
                       description: e.target.value,
                     }))
                   }
-                  className={`col-span-3 p-2 border rounded-md ${
+                  className={`p-2 border rounded-md ${
                     isDarkMode
                       ? "bg-gray-800 text-white border-gray-700 placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500"
                       : "bg-white text-black border-gray-300 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
