@@ -14,6 +14,7 @@ import { useRecoilState } from "recoil";
 import { tagsState } from "@/store/atoms/tags";
 import { trpc } from "@/utils/trpc";
 import { useSession } from "@clerk/clerk-react";
+import NoDataMessage from "@/components/NoDataMessage";
 export default function ViewTags() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [view, setView] = useState<string>("list");
@@ -195,11 +196,11 @@ export default function ViewTags() {
           </div>
         </>
       ) : (
-        <div className="border border-gray-500 dark:border-gray-600 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
-          <h3 className="text-lg text-center font-semibold text-gray-700 dark:text-gray-200">
-            No Tags Available
-          </h3>
-        </div>
+        <NoDataMessage
+          title="No Tags Available!"
+          description=" It looks like there aren't any tags created for now.Please create
+              a new tag."
+        />
       )}
     </>
   );

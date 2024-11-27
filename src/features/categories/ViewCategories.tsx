@@ -1,4 +1,5 @@
 import { Category } from "@/App";
+import NoDataMessage from "@/components/NoDataMessage";
 import { categoryState } from "@/store/atoms/category";
 import { trpc } from "@/utils/trpc";
 import { useSession } from "@clerk/clerk-react";
@@ -163,11 +164,11 @@ export default function ViewCategories() {
           </div>
         </div>
       ) : (
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-10 w-full">
-          <h3 className="text-lg text-center font-semibold text-gray-700 dark:text-gray-200">
-            No Category Available
-          </h3>
-        </div>
+        <NoDataMessage
+          title="No Category Available!"
+          description=" It looks like there aren't any categories created for now.Please
+              create a new category."
+        />
       )}
     </>
   );

@@ -1,13 +1,20 @@
+import { Event } from "@/App";
 import { cn } from "@/lib/utils";
 import { Clock, MapPinIcon } from "lucide-react";
-import { useState } from "react";
+import { MouseEvent, useState } from "react";
 import { createPortal } from "react-dom";
 
-export const EventWithPopover = ({ event, isDarkMode }) => {
+export const EventWithPopover = ({
+  event,
+  isDarkMode,
+}: {
+  event: Event;
+  isDarkMode: boolean;
+}) => {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [popoverPosition, setPopoverPosition] = useState({ top: 0, left: 0 });
 
-  const handleMouseEnter = (e) => {
+  const handleMouseEnter = (e: MouseEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
     setPopoverPosition({
       top: rect.top - 10, // Slightly above the event
