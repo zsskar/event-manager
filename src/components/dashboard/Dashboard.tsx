@@ -1,16 +1,60 @@
 import React from "react";
 import { ContentLayout } from "../layout/ContentLayout";
-import { useRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import { tagsState } from "@/store/atoms/tags";
 import { categoryState } from "@/store/atoms/category";
 import { useSession } from "@clerk/clerk-react";
 import { Separator } from "../ui/separator";
-import { Locate, LucideWatch, Timer } from "lucide-react";
+import { eventState } from "@/store/atoms/event";
+import { Event } from "@/App";
+import UpcomingEvents from "./UpcomingEvents";
+
+export type GroupedEvent = {
+  date: string;
+  events: {
+    name: string;
+    time: Date;
+    location: string;
+  }[];
+};
 
 const Dashboard: React.FC = () => {
-  const tags = useRecoilState(tagsState);
-  const categories = useRecoilState(categoryState);
+  const tags = useRecoilValue(tagsState);
+  const categories = useRecoilValue(categoryState);
+  const events = useRecoilValue(eventState);
   const { session } = useSession();
+
+  const totalUpcomingEvents = () => {
+    const upcomingEvents = events.filter(
+      (event) => new Date(event.fromDate) >= new Date()
+    );
+    return upcomingEvents;
+  };
+
+  const getEventByGrouping = () => {
+    return groupByDate(totalUpcomingEvents());
+  };
+
+  const groupByDate = (events: Event[]): GroupedEvent[] => {
+    const grouped = events.reduce(
+      (acc: Record<string, GroupedEvent>, event) => {
+        const date = new Date(event.fromDate).toLocaleDateString("en-GB"); // Format: DD-MM-YYYY
+        if (!acc[date]) {
+          acc[date] = { date, events: [] };
+        }
+
+        acc[date].events.push({
+          name: event.name,
+          time: new Date(event.fromDate),
+          location: event.location as string,
+        });
+
+        return acc;
+      },
+      {}
+    );
+    return Object.values(grouped).slice(0, 5); // Limit to 5 objects
+  };
 
   return (
     <ContentLayout title="Dashboard">
@@ -26,7 +70,7 @@ const Dashboard: React.FC = () => {
                 Total Events
               </h3>
               <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-100">
-                10
+                {events?.length}
               </p>
             </div>
             <div className="bg-blue-100 dark:bg-blue-800 p-4 rounded-lg shadow-md flex flex-col items-center">
@@ -52,84 +96,12 @@ const Dashboard: React.FC = () => {
                 Upcoming Events
               </h3>
               <p className="text-2xl font-bold text-purple-800 dark:text-purple-100">
-                5
+                {totalUpcomingEvents().length}
               </p>
             </div>
           </div>
           <Separator className="mb-6 mt-6" />
-
-          <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-6">
-            Ready for upcoming events (Top 5):
-          </h3>
-
-          <div className="space-y-6">
-            {[
-              {
-                date: "24-11-2024",
-                events: [
-                  {
-                    name: "Event -1",
-                    time: "10 AM",
-                    location: "Conference Hall A",
-                  },
-                  { name: "Event -2", time: "11 AM", location: "Room B12" },
-                ],
-              },
-              {
-                date: "25-11-2024",
-                events: [
-                  {
-                    name: "Event -3",
-                    time: "10 AM",
-                    location: "Main Auditorium",
-                  },
-                ],
-              },
-              {
-                date: "01-12-2024",
-                events: [
-                  {
-                    name: "Event -4",
-                    time: "10 AM",
-                    location: "Community Center",
-                  },
-                ],
-              },
-            ].map((day, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-r from-blue-100 to-blue-50 dark:from-gray-800 dark:to-gray-700 rounded-lg p-5 shadow-lg"
-              >
-                <h4 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center">
-                  <LucideWatch /> {day.date} ({day.events.length}{" "}
-                  {day.events.length > 1 ? "events" : "event"})
-                </h4>
-
-                <ul className="space-y-4">
-                  {day.events.map((event, i) => (
-                    <li
-                      key={i}
-                      className="flex justify-between items-start bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md"
-                    >
-                      <div>
-                        <h5 className="text-gray-800 dark:text-gray-100 font-medium text-lg flex items-center">
-                          {event.name}
-                        </h5>
-                        <p className="text-gray-600 dark:text-gray-400 text-sm flex items-center mt-1">
-                          <Locate />
-                          &nbsp; {event.location}
-                        </p>
-                      </div>
-                      <span className="text-gray-500 dark:text-gray-400 text-sm flex items-center">
-                        <Timer />
-                        {event.time}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
+          <UpcomingEvents getEventByGrouping={getEventByGrouping} />
         </div>
       </div>
     </ContentLayout>

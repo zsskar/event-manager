@@ -6,7 +6,7 @@ export default function EventUpdateInfo() {
       <Info className="w-6 h-6 text-blue-500" />
       <div>
         <h2 className="text-sm font-medium text-gray-700 dark:text-gray-200">
-          Once an event is created, it cannot be deleted. If you want to change
+          Once an event is created, it cannot be updated. If you want to change
           any event, delete the existing one and create a new one.
         </h2>
       </div>

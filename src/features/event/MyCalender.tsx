@@ -55,6 +55,15 @@ export type EventType = {
   createdBy: string;
 };
 
+export const transformEvents = (eventData: Event[]): EventTypeCalender[] =>
+  eventData.map((event) => ({
+    id: event.id.toString(),
+    title: event.name,
+    start: new Date(event.fromDate).toISOString().split("T")[0],
+    end: new Date(event.toDate).toISOString().split("T")[0],
+    location: event.location || "",
+  }));
+
 const MyCalendar: React.FC = () => {
   const { theme } = useTheme();
   const today = new Date();
@@ -76,39 +85,12 @@ const MyCalendar: React.FC = () => {
 
   const [events, setEvents] = useRecoilState(eventState);
   const createMutation = trpc.calender.createEvent.useMutation();
-  const { session, isLoaded } = useSession();
-
-  const {
-    data: eventsData,
-    isLoading,
-    error,
-  } = trpc.calender.getAllEventsByUserId.useQuery(
-    { userId: session?.user.id as string },
-    { enabled: isLoaded && !!session?.user.id }
-  );
-
-  const transformEvents = (eventData: Event[]): EventTypeCalender[] =>
-    eventData.map((event) => ({
-      id: event.id.toString(),
-      title: event.name,
-      start: new Date(event.fromDate).toISOString().split("T")[0],
-      end: new Date(event.toDate).toISOString().split("T")[0],
-      location: event.location || "",
-    }));
+  const { session } = useSession();
 
   useEffect(() => {
-    if (!isLoading && eventsData) {
-      // Transform events and set states
-      console.log("EVents: ", eventsData.events);
-
-      const transformed = transformEvents(eventsData.events);
-      setEvents(eventsData.events); // Keep the raw data for backend consistency
-      setAvailableEvents(transformed); // Store transformed events for the calendar
-    }
-    if (error) {
-      toast.error("Error loading events");
-    }
-  }, [eventsData, isLoading]);
+    const transformed = transformEvents(events);
+    setAvailableEvents(transformed);
+  }, [events]);
 
   const availableCategories = categories.map((c) => {
     return { value: c.category, label: c.category };
@@ -141,21 +123,6 @@ const MyCalendar: React.FC = () => {
   });
 
   const isDarkMode = theme === "dark";
-  //   {
-  //     id: 1,
-  //     title: "Sample Event",
-  //     start: new Date(2024, 10, 7, 10, 0),
-  //     end: new Date(2024, 10, 7, 11, 0),
-  //     allDay: true,
-  //   },
-  //   {
-  //     id: 2,
-  //     title: "Another Event",
-  //     start: new Date(2024, 10, 8, 12, 0),
-  //     end: new Date(2024, 10, 8, 13, 0),
-  //     allDay: false,
-  //   },
-  // ]);
 
   const getDateOnly = (date: Date) => {
     return new Date(date.setDate(date.getDate() + 1))
@@ -169,10 +136,10 @@ const MyCalendar: React.FC = () => {
     const endDate = new Date(end.getTime() - 24 * 60 * 60 * 1000);
     const startDate = new Date(start);
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Ensure today is normalized to midnight
+    today.setHours(0, 0, 0, 0);
 
     const clickedDate = new Date(start);
-    clickedDate.setHours(0, 0, 0, 0); // Normalize clickedDate to midnight
+    clickedDate.setHours(0, 0, 0, 0);
     if (clickedDate < today) {
       return;
     }
@@ -329,243 +296,257 @@ const MyCalendar: React.FC = () => {
             setIsModalOpen((prev) => !prev);
           }}
         >
-          <DialogContent className="sm:max-w-[600px] p-6">
-            <DialogHeader>
-              <DialogTitle>Create Event</DialogTitle>
-              <DialogDescription>
-                Create your event here for the selected date. The "From Date" is
-                your selected date and "To Date" is optional.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-6 sm:grid-cols-2 sm:gap-4 py-4">
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="name" className="text-sm font-medium">
-                  Event Name
-                </Label>
-                <div className="relative">
-                  <Info
-                    className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${
-                      isDarkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  />
-                  <Input
-                    required
-                    id="name"
-                    name="name"
-                    value={eventData.name}
-                    onChange={handleInputChange}
-                    className={`pl-10 ${
-                      isDarkMode
-                        ? "border-gray-700 bg-gray-800 text-white"
-                        : "border-input bg-background text-black"
-                    }`}
-                    placeholder="Event Name"
-                  />
-                </div>
-              </div>
+          <DialogContent className="p-0 sm:max-w-[600px] w-full h-[90vh] overflow-hidden flex flex-col">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-4">
+              <DialogHeader>
+                <DialogTitle className="text-lg sm:text-2xl font-bold">
+                  Create Event
+                </DialogTitle>
+                <DialogDescription className="text-sm sm:text-base text-white">
+                  Create your event here for the selected date. The{" "}
+                  <b className="text-black">From Date </b>
+                  is your selected date and{" "}
+                  <b className="text-black">To Date</b> is optional.
+                </DialogDescription>
+              </DialogHeader>
+            </div>
 
-              {/* Location */}
-              <div className="flex flex-col gap-2">
-                <Label htmlFor="location" className="text-sm font-medium">
-                  Location
-                </Label>
-                <div className="relative">
-                  <MapPin
-                    className={`w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 ${
-                      isDarkMode ? "text-gray-400" : "text-gray-500"
-                    }`}
-                  />
-                  <Input
-                    required
-                    id="location"
-                    name="location"
-                    value={eventData.location}
-                    onChange={handleInputChange}
-                    className={`pl-10  ${
-                      isDarkMode
-                        ? "border-gray-700 bg-gray-800 text-white"
-                        : "border-input bg-background text-black"
-                    }`}
-                    placeholder="Location"
-                  />
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Event Name */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Event Name
+                  </Label>
+                  <div className="relative">
+                    <Info className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Input
+                      required
+                      id="name"
+                      name="name"
+                      value={eventData.name}
+                      onChange={handleInputChange}
+                      className={`pl-10 ${
+                        isDarkMode
+                          ? "border-gray-700 bg-gray-800 text-white"
+                          : "border-input bg-background text-black"
+                      }`}
+                      placeholder="Event Name"
+                    />
+                  </div>
                 </div>
-              </div>
 
-              {/* From Date */}
-              <div className="flex flex-col gap-2 sm:col-span-1">
-                <Label htmlFor="fromDate" className="text-sm font-medium">
-                  From Date
-                </Label>
-                {fromDate && (
+                {/* Location */}
+                <div className="flex flex-col gap-2">
+                  <Label htmlFor="location" className="text-sm font-medium">
+                    Location
+                  </Label>
+                  <div className="relative">
+                    <MapPin className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                    <Input
+                      required
+                      id="location"
+                      name="location"
+                      value={eventData.location}
+                      onChange={handleInputChange}
+                      className={`pl-10  ${
+                        isDarkMode
+                          ? "border-gray-700 bg-gray-800 text-white"
+                          : "border-input bg-background text-black"
+                      }`}
+                      placeholder="Location"
+                    />
+                  </div>
+                </div>
+
+                {/* From Date */}
+                <div className="flex flex-col gap-2 sm:col-span-1">
+                  <Label htmlFor="fromDate" className="text-sm font-medium">
+                    From Date
+                  </Label>
+                  {fromDate && (
+                    <DatePicker
+                      date={fromDate}
+                      placeholder="From Date"
+                      setToDate={setToDate}
+                    />
+                  )}
+                </div>
+
+                {/* To Date */}
+                <div className="flex flex-col gap-2 sm:col-span-1">
+                  <Label htmlFor="toDate" className="text-sm font-medium">
+                    To Date
+                  </Label>
                   <DatePicker
-                    date={fromDate}
-                    placeholder="From Date"
+                    startDate={fromDate}
+                    date={toDate || new Date(eventData.toDate)}
+                    placeholder="To Date"
                     setToDate={setToDate}
                   />
-                )}
-              </div>
+                </div>
 
-              {/* To Date */}
-              <div className="flex flex-col gap-2 sm:col-span-1">
-                <Label htmlFor="toDate" className="text-sm font-medium">
-                  To Date
-                </Label>
-                <DatePicker
-                  startDate={fromDate}
-                  date={toDate || new Date(eventData.toDate)}
-                  placeholder="To Date"
-                  setToDate={setToDate}
-                />
-              </div>
+                {/* Category */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <Label htmlFor="category" className="text-sm font-medium">
+                    Category
+                  </Label>
+                  <Select
+                    required
+                    options={availableCategories}
+                    onChange={(selected) =>
+                      setEventData((prev) => ({
+                        ...prev,
+                        category: selected?.value || "",
+                      }))
+                    }
+                    components={{
+                      DropdownIndicator: (props) => (
+                        <components.DropdownIndicator {...props}>
+                          <Info className="text-gray-500" />
+                        </components.DropdownIndicator>
+                      ),
+                      SingleValue: ({ data, ...props }) => (
+                        <components.SingleValue {...props}>
+                          <div className="flex items-center">
+                            <Info className="mr-1 w-5 h-5 text-gray-400" />
+                            {data.label}
+                          </div>
+                        </components.SingleValue>
+                      ),
+                    }}
+                    classNamePrefix="custom-select"
+                    className={`w-full}`}
+                    styles={{
+                      control: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                      valueContainer: (baseStyles) => ({
+                        ...baseStyles,
+                      }),
+                      menu: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      }),
+                      singleValue: (baseStyles) => ({
+                        ...baseStyles,
+                        color: isDarkMode ? "#FFFFFF" : "#000000", // Explicit text color for the selected value
+                      }),
+                    }}
+                  />
+                </div>
 
-              {/* Tags */}
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <Label htmlFor="tags" className="text-sm font-medium">
-                  Tags
-                </Label>
-                <Select
-                  required
-                  isMulti
-                  formatOptionLabel={(e) => (
-                    <div className="flex items-center">
-                      <div
-                        style={{
-                          width: "10px",
-                          height: "10px",
-                          backgroundColor: e.color,
-                          marginRight: "8px",
-                          borderRadius: "50%",
-                        }}
-                      ></div>
-                      {e.label}
-                    </div>
-                  )}
-                  closeMenuOnSelect={false}
-                  options={availableTags}
-                  onChange={(selected) =>
-                    setEventData((prev) => ({
-                      ...prev,
-                      tags: selected.map((tag) => tag.value),
-                    }))
-                  }
-                  components={{
-                    DropdownIndicator: (props) => (
-                      <components.DropdownIndicator {...props}>
-                        <Tags className="text-gray-500" />
-                      </components.DropdownIndicator>
-                    ),
-                    MultiValueContainer: (props) => (
-                      <components.MultiValueContainer {...props}>
-                        <Tag className="mr-1 w-5 h-5 mt-1 ml-1 text-gray-400" />
-                        {props.children}
-                      </components.MultiValueContainer>
-                    ),
-                  }}
-                  classNamePrefix="custom-select"
-                  className={`w-full ${
-                    isDarkMode ? "custom-select-dark" : "custom-select-light"
-                  }`}
-                  styles={{
-                    control: (baseStyles) => ({
-                      ...baseStyles,
-                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                      borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
-                      color: isDarkMode ? "#FFFFFF" : "#000000",
-                    }),
-                    valueContainer: (baseStyles) => ({
-                      ...baseStyles,
-                    }),
-                    menu: (baseStyles) => ({
-                      ...baseStyles,
-                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                    }),
-                  }}
-                />
-              </div>
+                {/* Tags */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <Label htmlFor="tags" className="text-sm font-medium">
+                    Tags
+                  </Label>
+                  <Select
+                    required
+                    isMulti
+                    formatOptionLabel={(e) => (
+                      <div className="flex items-center">
+                        <div
+                          style={{
+                            width: "10px",
+                            height: "10px",
+                            backgroundColor: e.color,
+                            marginRight: "8px",
+                            borderRadius: "50%",
+                          }}
+                        ></div>
+                        {e.label}
+                      </div>
+                    )}
+                    closeMenuOnSelect={false}
+                    options={availableTags}
+                    onChange={(selected) =>
+                      setEventData((prev) => ({
+                        ...prev,
+                        tags: selected.map((tag) => tag.value),
+                      }))
+                    }
+                    components={{
+                      DropdownIndicator: (props) => (
+                        <components.DropdownIndicator {...props}>
+                          <Tags className="text-gray-500" />
+                        </components.DropdownIndicator>
+                      ),
+                      MultiValueContainer: (props) => (
+                        <components.MultiValueContainer {...props}>
+                          <Tag className="mr-1 w-5 h-5 mt-1 ml-1 text-gray-400" />
+                          {props.children}
+                        </components.MultiValueContainer>
+                      ),
+                    }}
+                    classNamePrefix="custom-select"
+                    className={`w-full ${
+                      isDarkMode ? "custom-select-dark" : "custom-select-light"
+                    }`}
+                    styles={{
+                      control: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                        borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
+                        color: isDarkMode ? "#FFFFFF" : "#000000",
+                      }),
+                      valueContainer: (baseStyles) => ({
+                        ...baseStyles,
+                      }),
+                      menu: (baseStyles) => ({
+                        ...baseStyles,
+                        backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
+                      }),
+                    }}
+                  />
+                </div>
 
-              {/* Category */}
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <Label htmlFor="category" className="text-sm font-medium">
-                  Category
-                </Label>
-                <Select
-                  required
-                  options={availableCategories}
-                  onChange={(selected) =>
-                    setEventData((prev) => ({
-                      ...prev,
-                      category: selected?.value || "",
-                    }))
-                  }
-                  components={{
-                    DropdownIndicator: (props) => (
-                      <components.DropdownIndicator {...props}>
-                        <Info className="text-gray-500" />
-                      </components.DropdownIndicator>
-                    ),
-                    SingleValue: ({ data, ...props }) => (
-                      <components.SingleValue {...props}>
-                        <div className="flex items-center">
-                          <Info className="mr-1 w-5 h-5 text-gray-400" />
-                          {data.label}
-                        </div>
-                      </components.SingleValue>
-                    ),
-                  }}
-                  classNamePrefix="custom-select"
-                  className={`w-full}`}
-                  styles={{
-                    control: (baseStyles) => ({
-                      ...baseStyles,
-                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                      borderColor: isDarkMode ? "#4A5568" : "#E2E8F0",
-                      color: isDarkMode ? "#FFFFFF" : "#000000",
-                    }),
-                    valueContainer: (baseStyles) => ({
-                      ...baseStyles,
-                    }),
-                    menu: (baseStyles) => ({
-                      ...baseStyles,
-                      backgroundColor: isDarkMode ? "#2D3748" : "#FFFFFF",
-                    }),
-                    singleValue: (baseStyles) => ({
-                      ...baseStyles,
-                      color: isDarkMode ? "#FFFFFF" : "#000000", // Explicit text color for the selected value
-                    }),
-                  }}
-                />
-              </div>
-
-              {/* Description */}
-              <div className="flex flex-col gap-2 sm:col-span-2">
-                <Label htmlFor="description" className="text-sm font-medium">
-                  Description
-                </Label>
-                <Textarea
-                  id="description"
-                  name="description"
-                  value={eventData.description}
-                  onChange={(e) =>
-                    setEventData((prev) => ({
-                      ...prev,
-                      description: e.target.value,
-                    }))
-                  }
-                  className={`p-2 border rounded-md ${
-                    isDarkMode
-                      ? "bg-gray-800 text-white border-gray-700 placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500"
-                      : "bg-white text-black border-gray-300 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
-                  } focus:ring-2`}
-                  placeholder="Event Description"
-                />
+                {/* Description */}
+                <div className="flex flex-col gap-2 sm:col-span-2">
+                  <Label htmlFor="description" className="text-sm font-medium">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    value={eventData.description}
+                    onChange={(e) =>
+                      setEventData((prev) => ({
+                        ...prev,
+                        description: e.target.value,
+                      }))
+                    }
+                    className={`p-2 border rounded-md ${
+                      isDarkMode
+                        ? "bg-gray-800 text-white border-gray-700 placeholder-gray-400 focus:border-gray-500 focus:ring-gray-500"
+                        : "bg-white text-black border-gray-300 placeholder-gray-500 focus:border-blue-500 focus:ring-blue-500"
+                    } focus:ring-2`}
+                    placeholder="Event Description"
+                  />
+                </div>
               </div>
             </div>
 
-            <DialogFooter>
+            {/* Footer */}
+            <div className="bg-gray-100 p-4 flex justify-end gap-4">
+              <Button
+                onClick={() => {
+                  clearForm();
+                  setIsModalOpen((prev) => !prev);
+                }}
+                variant="outline"
+              >
+                Cancel
+              </Button>
               <Button onClick={handleSubmit} disabled={disableButton}>
                 Save Event
               </Button>
-            </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       )}

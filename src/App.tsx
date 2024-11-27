@@ -7,6 +7,7 @@ import { useSession } from "@clerk/clerk-react";
 import { useEffect } from "react";
 import { trpc } from "./utils/trpc";
 import { categoryState } from "./store/atoms/category";
+import { eventState } from "./store/atoms/event";
 
 export type TagGroup = {
   color: string;
@@ -49,6 +50,7 @@ function App() {
   const { session, isLoaded } = useSession();
   const [, setTagsData] = useRecoilState(tagsState);
   const [, setCategoriesData] = useRecoilState(categoryState);
+  const [, setEvents] = useRecoilState(eventState);
   const { data: tags, isLoading: isTagsLoading } =
     trpc.tags.getTagsByUserId.useQuery(
       { userId: session?.user.id as string }, // Input to the query
@@ -61,6 +63,12 @@ function App() {
       { enabled: isLoaded && !!session?.user.id }
     );
 
+  const { data: events, isLoading: isEventLoading } =
+    trpc.calender.getAllEventsByUserId.useQuery(
+      { userId: session?.user.id as string },
+      { enabled: isLoaded && !!session?.user.id }
+    );
+
   useEffect(() => {
     if (!isTagsLoading && tags) {
       setTagsData(tags);
@@ -68,7 +76,17 @@ function App() {
     if (!isCategoriesLoading && categories) {
       setCategoriesData(categories);
     }
-  }, [isTagsLoading, isCategoriesLoading, tags, categories]);
+    if (!isEventLoading && events) {
+      setEvents(events.events);
+    }
+  }, [
+    isTagsLoading,
+    isCategoriesLoading,
+    isEventLoading,
+    tags,
+    categories,
+    events,
+  ]);
 
   return (
     <>
