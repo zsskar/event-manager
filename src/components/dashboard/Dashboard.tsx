@@ -8,6 +8,7 @@ import { Separator } from "../ui/separator";
 import { eventState } from "@/store/atoms/event";
 import { Event } from "@/App";
 import UpcomingEvents from "./UpcomingEvents";
+import { Calendar, CalendarCheckIcon, List, Tags } from "lucide-react";
 
 export type GroupedEvent = {
   date: string;
@@ -65,41 +66,60 @@ const Dashboard: React.FC = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-            <div className="bg-yellow-100 dark:bg-yellow-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+            {/* Total Events */}
+            <div className="border border-gray-500 dark:border-gray-600 bg-yellow-100 dark:bg-yellow-800 p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+              <div className="w-12 h-12 bg-yellow-300 dark:bg-yellow-600 rounded-full flex items-center justify-center mb-4">
+                <Calendar className=" text-yellow-700 dark:text-yellow-200 text-2xl" />
+              </div>
+
               <h3 className="text-lg font-semibold text-yellow-700 dark:text-yellow-300">
                 Total Events
               </h3>
-              <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-100">
+              <p className="text-3xl font-bold text-yellow-800 dark:text-yellow-100 mt-2">
                 {events?.length}
               </p>
             </div>
-            <div className="bg-blue-100 dark:bg-blue-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+
+            {/* Total Tags */}
+            <div className="border border-gray-500 dark:border-gray-600 bg-blue-100 dark:bg-blue-800 p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+              <div className="w-12 h-12 bg-blue-300 dark:bg-blue-600 rounded-full flex items-center justify-center mb-4">
+                <Tags className="text-blue-700 dark:text-blue-200 text-2xl" />
+              </div>
               <h3 className="text-lg font-semibold text-blue-700 dark:text-blue-300">
                 Total Tags
               </h3>
-              <p className="text-2xl font-bold text-blue-800 dark:text-blue-100">
+              <p className="text-3xl font-bold text-blue-800 dark:text-blue-100 mt-2">
                 {tags?.length}
               </p>
             </div>
 
-            <div className="bg-green-100 dark:bg-green-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+            {/* Total Categories */}
+            <div className="border border-gray-500 dark:border-gray-600 bg-green-100 dark:bg-green-800 p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+              <div className="w-12 h-12 bg-green-300 dark:bg-green-600 rounded-full flex items-center justify-center mb-4">
+                <List className="text-green-700 dark:text-green-200 text-2xl" />
+              </div>
               <h3 className="text-lg font-semibold text-green-700 dark:text-green-300">
                 Total Categories
               </h3>
-              <p className="text-2xl font-bold text-green-800 dark:text-green-100">
+              <p className="text-3xl font-bold text-green-800 dark:text-green-100 mt-2">
                 {categories?.length}
               </p>
             </div>
 
-            <div className="bg-purple-100 dark:bg-purple-800 p-4 rounded-lg shadow-md flex flex-col items-center">
+            {/* Upcoming Events */}
+            <div className="border border-gray-500 dark:border-gray-600 bg-purple-100 dark:bg-purple-800 p-6 rounded-lg shadow-lg flex flex-col items-center transition-transform transform hover:scale-105">
+              <div className="w-12 h-12 bg-purple-300 dark:bg-purple-600 rounded-full flex items-center justify-center mb-4">
+                <CalendarCheckIcon className="text-purple-700 dark:text-purple-200 text-2xl" />
+              </div>
               <h3 className="text-lg font-semibold text-purple-700 dark:text-purple-300">
                 Upcoming Events
               </h3>
-              <p className="text-2xl font-bold text-purple-800 dark:text-purple-100">
+              <p className="text-3xl font-bold text-purple-800 dark:text-purple-100 mt-2">
                 {totalUpcomingEvents().length}
               </p>
             </div>
           </div>
+
           <Separator className="mb-6 mt-6" />
           <UpcomingEvents getEventByGrouping={getEventByGrouping} />
         </div>

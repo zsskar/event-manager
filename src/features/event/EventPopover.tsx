@@ -35,6 +35,25 @@ export const EventWithPopover = ({
     }).format(new Date(date));
   };
 
+  const getEventClass = (fromDate: string, toDate: string): string => {
+    const currentDate = new Date();
+    const startDate = new Date(fromDate);
+    const endDate = new Date(toDate);
+
+    if (currentDate > endDate) {
+      // Event has passed
+      return "bg-red-500 text-white";
+    } else if (currentDate >= startDate && currentDate <= endDate) {
+      // Event is ongoing
+      return "bg-green-500 text-white";
+    } else if (currentDate < startDate) {
+      // Event is upcoming
+      return "bg-yellow-500 text-white";
+    }
+
+    return "bg-gray-500 text-white"; // Fallback in case of invalid dates
+  };
+
   return (
     <div
       onMouseEnter={handleMouseEnter}
@@ -43,7 +62,8 @@ export const EventWithPopover = ({
     >
       <span
         className={cn(
-          "font-semibold rounded py-1 px-2 transition duration-200",
+          "font-bold rounded py-2 px-2 transition duration-200",
+          getEventClass(event.fromDate, event.toDate),
           isDarkMode
             ? "text-gray-200 hover:text-blue-400"
             : "text-gray-900 hover:text-blue-600"
@@ -63,11 +83,11 @@ export const EventWithPopover = ({
               zIndex: 9999,
             }}
             className={cn(
-              "w-80 shadow-2xl rounded-2xl p-6 transition-all duration-300 transform",
+              "bg-gradient-to-b  w-80 shadow-2xl rounded-2xl p-6 transition-all duration-300 transform",
               isPopoverOpen ? "opacity-100 scale-100" : "opacity-0 scale-95",
               isDarkMode
-                ? "bg-gradient-to-b from-gray-900 to-gray-800 text-gray-100"
-                : "bg-gradient-to-b from-white to-gray-100 text-gray-800"
+                ? "from-gray-900 to-gray-800 text-gray-100"
+                : "from-white to-gray-100 text-gray-800"
             )}
           >
             <h3
@@ -82,13 +102,13 @@ export const EventWithPopover = ({
             {/* Start Time */}
             <p className="text-base flex items-center mb-3">
               <Clock className="w-5 h-5 mr-2 text-blue-400" />
-              <strong>Start:</strong> {formatDate(event?.fromDate)}
+              <strong>Start: </strong> {formatDate(event?.fromDate)}
             </p>
 
             {/* End Time */}
             <p className="text-base flex items-center mb-3">
               <Clock className="w-5 h-5 mr-2 text-red-400" />
-              <strong>End:</strong>
+              <strong>End: </strong>
               {formatDate(
                 new Date(
                   new Date(event?.toDate).setDate(
@@ -102,7 +122,7 @@ export const EventWithPopover = ({
             {event.location && (
               <p className="text-base flex items-center">
                 <MapPinIcon className="w-5 h-5 mr-2 text-green-400" />
-                <strong>Location:</strong> {event?.location}
+                <strong>Location: </strong> {event?.location}
               </p>
             )}
 

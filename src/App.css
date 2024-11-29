@@ -140,15 +140,12 @@
 }
 
 .fc-event {
-  @apply bg-blue-500 text-white rounded-md px-2 py-1;
+  @apply text-white rounded-md px-2 py-1;
 }
 
 /* Default (Light Theme) */
 .fc {
   @apply bg-white text-gray-800 border-gray-300;
-}
-.fc-event {
-  @apply bg-blue-500 text-white rounded;
 }
 
 /* Dark Mode */
@@ -160,15 +157,10 @@
 }
 
 .fc-event {
-  background-color: #007bff !important; /* Custom blue */
   color: white !important; /* White text */
   border-radius: 6px !important; /* Rounded corners */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Add subtle shadow */
   padding: 4px 8px !important; /* Padding for better spacing */
-}
-
-.fc-event:hover {
-  background-color: #0056b3 !important; /* Darker blue on hover */
 }
 
 .fc-popover {
@@ -180,15 +172,14 @@
 }
 
 .fc-popover .fc-event {
-  background-color: #007bff !important;
   color: white !important;
   padding: 4px;
   border-radius: 4px;
 }
 
-.fc-popover .fc-event:hover {
+/* .fc-popover .fc-event:hover {
   background-color: #0056b3 !important;
-}
+} */
 
 .fc-toolbar-title {
   font-size: 1rem;
@@ -264,7 +255,7 @@
 .light .fc {
   --fc-bg-color: #ffffff; /* Background */
   --fc-border-color: #e5e7eb; /* Border */
-  --fc-event-bg-color: #007bff; /* Event background */
+
   --fc-event-text-color: #ffffff; /* Event text */
   --fc-text-color: #374151; /* General text */
 }
@@ -273,7 +264,6 @@
 .dark .fc {
   --fc-bg-color: #1f2937; /* Background */
   --fc-border-color: #374151; /* Border */
-  --fc-event-bg-color: #3b82f6; /* Event background */
   --fc-event-text-color: #ffffff; /* Event text */
   --fc-text-color: #f3f4f6; /* General text */
 }
@@ -314,7 +304,6 @@
   }
 
   .fc-event {
-    background-color: var(--fc-event-bg-color);
     color: var(--fc-event-text-color);
     border-radius: 4px;
   }
