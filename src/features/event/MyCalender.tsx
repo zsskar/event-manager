@@ -1,6 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, momentLocalizer, SlotInfo } from "react-big-calendar";
-import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 import { ContentLayout } from "@/components/layout/ContentLayout";
 import { useTheme } from "next-themes";
@@ -8,7 +6,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -34,7 +31,7 @@ import timeGridPlugin from "@fullcalendar/timegrid"; // For time grid view
 import interactionPlugin from "@fullcalendar/interaction";
 import { DateSelectArg } from "@fullcalendar/core/index.js";
 import { Info, MapPin, Tag, Tags } from "lucide-react";
-import EventUpdateInfo from "./EventUpdateInfo";
+import EventStatusIndicators from "./EventStatusIndicators";
 
 export interface EventTypeCalender {
   id: string;
@@ -217,9 +214,10 @@ const MyCalendar: React.FC = () => {
 
   return (
     <ContentLayout title="My Calendar">
+      <EventStatusIndicators />
       <div className="flex justify-center p-4">
         <div
-          className={`w-full max-w-5xl h-[80vh] ${
+          className={`w-full h-[80vh] ${
             isDarkMode ? "bg-gray-800 text-white" : "bg-white text-black"
           }`}
         >
@@ -241,8 +239,6 @@ const MyCalendar: React.FC = () => {
               setOpenSheet(!openSheet); // Open your custom sheet
             }}
             select={(info) => {
-              console.log("Select :" + info);
-
               handleDateClick(info);
             }}
             dayCellDidMount={(info) => {
@@ -258,22 +254,23 @@ const MyCalendar: React.FC = () => {
 
               if (normalizedDate < normalizedToday) {
                 // Past dates
-                info.el.style.backgroundColor = "#9999"; // Light gray
-                info.el.style.color = "#999"; // Muted text
-                info.el.style.pointerEvents = "none"; // Disable interactions
+                info.el.style.backgroundColor = "#9999";
+                info.el.style.color = "#999";
+                info.el.style.pointerEvents = "none";
               } else {
-                // Future and current dates
-                info.el.style.pointerEvents = "auto"; // Ensure clickable
-                info.el.style.cursor = "pointer"; // Indicate interactivity
+                info.el.style.pointerEvents = "auto";
+                info.el.style.cursor = "pointer";
               }
             }}
             eventContent={(eventInfo) => {
               const selectedEvent = getSelectedEvent(eventInfo.event.id);
               return (
-                <EventWithPopover
-                  event={selectedEvent}
-                  isDarkMode={isDarkMode}
-                />
+                selectedEvent && (
+                  <EventWithPopover
+                    event={selectedEvent}
+                    isDarkMode={isDarkMode}
+                  />
+                )
               );
             }}
             height="100%" // Full height of the container
@@ -286,7 +283,6 @@ const MyCalendar: React.FC = () => {
           />
         </div>
       </div>
-      <EventUpdateInfo />
 
       {isModalOpen && (
         <Dialog

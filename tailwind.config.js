@@ -4,6 +4,16 @@ export default {
 	content: ["./index.html", "./src/**/*.{ts,tsx,js,jsx}"],
 	theme: {
 		extend: {
+			animation: {
+				"pulse-shadow": "pulse-shadow 1.2s infinite",
+			},
+			keyframes: {
+				"pulse-shadow": {
+					"0%, 100%": { boxShadow: "0 0 6px 4px rgba(59, 130, 246, 0.4)" },
+					"50%": { boxShadow: "0 0 6px 6px rgba(59, 130, 246, 0.6)" },
+				},
+			},
+
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
